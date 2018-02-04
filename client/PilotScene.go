@@ -7,13 +7,13 @@ import (
 )
 
 type PilotScene struct {
-	Scene
+	*Scene
 	Ship *ShipGameObject
 }
 
 func NewPilotScene(r *sdl.Renderer, ch *controlHandler) *PilotScene{
 	return &PilotScene{
-		Scene: *NewScene(r, ch),
+		Scene: NewScene(r, ch),
 		}
 }
 

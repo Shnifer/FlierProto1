@@ -6,6 +6,7 @@ import (
 	"time"
 	"math/rand"
 	"github.com/Shnifer/FlierProto1/MNT"
+	"runtime"
 )
 
 //Константы экрана
@@ -38,7 +39,14 @@ const(
 
 func main() {
 
+	runtime.LockOSThread()
+
 	rand.Seed(time.Now().Unix())
+
+	log.Println("Connecting to Server...")
+	if err:=MNT.ConnectToServer();err!=nil{
+		log.Panicln(err)
+	}
 
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		log.Panicln(err)
@@ -88,10 +96,8 @@ func main() {
 	//Параметр сглаживания массштабирования
 	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "1")
 
-	log.Println("Connecting to Server...")
-	if err:=MNT.ConnectToServer(MNT.RoomName,MNT.ROLE_PILOT);err!=nil{
-		log.Panicln(err)
-	}
+	log.Println("login")
+	MNT.LoginToServer(MNT.RoomName,MNT.ROLE_PILOT)
 	MNT.DownloadGalaxy()
 
 	ControlHandler:=newControlHandler()

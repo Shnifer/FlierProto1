@@ -163,6 +163,7 @@ func main() {
 					DeadConns <- sender
 					continue
 				}
+
 				reqRoom := params[0]
 				reqRole := params[1]
 

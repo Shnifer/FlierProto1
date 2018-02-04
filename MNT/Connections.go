@@ -80,7 +80,22 @@ func newClientConn(conn net.Conn) ClientConn {
 //Глобальная перем
 var Client ClientConn
 
-func ConnectToServer(room, role string) error {
+func LoginToServer(room, role string) error{
+	if Client.Conn==nil {
+		return errors.New("No connection established!")
+	}
+
+	res,err := Client.CommandResult(room+" "+role)
+	if err!=nil {
+		return err
+	}
+	if res!=RES_LOGIN {
+		return errors.New("Login failed! "+res)
+	}
+	return nil
+}
+
+func ConnectToServer() error {
 	const maxtry  = 3
 
 	//УСТАНАВЛИВАЕМ СОЕДИНЕНИЕ
@@ -101,17 +116,7 @@ func ConnectToServer(room, role string) error {
 			break
 		}
 	}
-
 	log.Println("Connection ",conn)
-
 	Client = newClientConn(conn)
-	res,err := Client.CommandResult(room+" "+role)
-	if err!=nil {
-		return err
-	}
-	if res!=RES_LOGIN {
-		return errors.New("Login failed! "+res)
-	}
-
 	return nil
 }

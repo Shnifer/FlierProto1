@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/Shnifer/FlierProto1/V2"
 	"github.com/veandco/go-sdl2/sdl"
-	"fmt"
 )
 
 type ShipGameObject struct{
@@ -58,7 +57,6 @@ func (ship *ShipGameObject) Init(scene *Scene) {
 	flametex := TCache.GetTexture("flame_ani.png")
 	flameani := newAnimTexture(flametex,5,4)
 	ship.MainEngineFlameTex = flameani
-	fmt.Printf("%T %v",scene,scene)
 }
 
 func (ship *ShipGameObject) Update(dt float32) {
