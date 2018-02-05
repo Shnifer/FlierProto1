@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 	"strings"
-	"github.com/Shnifer/FlierProto1/MNT"
+	MNT "github.com/Shnifer/flierproto1/mnt"
 	"strconv"
 	"math/rand"
 	"time"
@@ -233,7 +233,10 @@ func HandleCommand(Room Room, role string, command, params string, out chan stri
 		out <- MNT.RES_CHECKROOM+" "+strconv.Itoa(len(Room.members))
 
 	case MNT.CMD_GETGALAXY:
-		out <- MNT.UploadGalaxy()
+		res:= MNT.UploadGalaxy()
+		for _,s:=range res {
+			out <- s
+		}
 	default:
 		log.Println("UNKNOWN COMMAND")
 		out <- MNT.ERR_UNKNOWNCMD

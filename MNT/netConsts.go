@@ -1,4 +1,4 @@
-package MNT
+package mnt
 
 const (
 	CMD_BROADCAST = "broadcast"

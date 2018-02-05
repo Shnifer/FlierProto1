@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Shnifer/FlierProto1/V2"
+	V2 "github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -14,10 +14,19 @@ type ShipGameObject struct{
 	angle float32
 	anglespeed float32
 
-	axel float32
+	//мощность маршевого движка от -1 до 1
+	thrust float32
+	//изменение величины аксель за единицу
+	thrustaxel float32
+	//максимальная сила движка
+	maxThrustForce float32
+
+	//изменение angAxel за 1 секунду
 	angAxel float32
 
-	ForceSum V2.V2
+
+	//Сумма внешних сил за такт
+	forceSum V2.V2
 
 	//Радиус и коллизии и полупоперечник рисовки
 	colRad float32
@@ -34,18 +43,19 @@ type ShipGameObject struct{
 	//время на показ кадра
 	animSlideTime float32
 	MainEngineFlameTex *animTexture
+
+	//TODO: абстрагировать в UI
+	arrowTex *sdl.Texture
 }
 
 func newShip(ps *ParticleSystem) *ShipGameObject{
 
-	res:= ShipGameObject{colRad: 40, axel:50, angAxel:90, angle:180, ps: ps, animSlideTime: 10}
+	res:= ShipGameObject{colRad: 40, thrustaxel:0.33, maxThrustForce:5000, angAxel:90, angle:180, ps: ps, animSlideTime: 10}
 
 	res.MainEngineProducer = &ProduceStats{
-		intense: 200,
-		lifeTime: 3,
-		color: sdl.Color{255,0,0,255},
-		randpos:7,
-		randspeed:15,
+		lifeTime:  3,
+		randpos:   7,
+		randspeed: 15,
 	}
 
 	return &res
@@ -54,6 +64,7 @@ func newShip(ps *ParticleSystem) *ShipGameObject{
 func (ship *ShipGameObject) Init(scene *Scene) {
 	ship.scene = scene
 	ship.tex = TCache.GetTexture("ship.png")
+	ship.arrowTex = TCache.GetTexture("arrow.png")
 	flametex := TCache.GetTexture("flame_ani.png")
 	flameani := newAnimTexture(flametex,5,4)
 	ship.MainEngineFlameTex = flameani
@@ -65,7 +76,6 @@ func (ship *ShipGameObject) Update(dt float32) {
 	//Поворачиваем на угол инрции
 	ship.angle+=ship.anglespeed*dt
 
-	produceMainEng:=false
 	if CH.GetKey(sdl.SCANCODE_A) {
 		ship.anglespeed += (ship.angAxel * dt)
 	}
@@ -74,29 +84,39 @@ func (ship *ShipGameObject) Update(dt float32) {
 	}
 
 	if CH.GetKey(sdl.SCANCODE_W) {
-		addSpeed:=V2.InDir(ship.angle).Mul(ship.axel*dt)
-		ship.speed = V2.Add(ship.speed, addSpeed)
-		produceMainEng = true
+		ship.thrust+=ship.thrustaxel*dt
+		if ship.thrust>1 {
+			ship.thrust=1
+		}
 	}
 	if CH.GetKey(sdl.SCANCODE_S) {
-		addSpeed:=V2.InDir(ship.angle).Mul(-ship.axel*dt)
-		ship.speed = V2.Add(ship.speed, addSpeed)
+		ship.thrust-=ship.thrustaxel*dt
+		if ship.thrust<(0) {
+			ship.thrust=0
+		}
 	}
 
-	//Добавили постоянные силы гравитации и обнулили сумматор
-	ship.speed.DoAddMul(ship.ForceSum,dt)
-	ship.ForceSum=V2.V2{}
+	//Расчитываем и добавляем силу движка к уже посчитаной гравитации
+	ThrustForce := V2.InDir(ship.angle).Mul(ship.thrust*ship.maxThrustForce*dt)
+	ship.ApplyForce(ThrustForce)
+
+	//Добавили сумму сил к скорости и обнулили сумматор
+	ship.speed.DoAddMul(ship.forceSum,dt)
+	ship.forceSum =V2.V2{}
 
 	//Пренесли скорость в координату
 	ship.pos.DoAddMul(ship.speed,dt)
 
-	//Сдвинули камеру
-	ship.scene.CameraCenter = ship.pos
-
 	//Отдельный по сути блок анимации
+	const MaxIntense = 300
+	produceMainEng:=(ship.thrust>0)
 	if produceMainEng {
+		thrust:=ship.thrust
 		ship.MainEngineProducer.pos = ship.pos.Add(V2.InDir(ship.angle).Mul(-1*ship.colRad))
-		ship.MainEngineProducer.speed = V2.InDir(ship.angle).Mul(-50).Add(ship.speed)
+		psspeed:=10+thrust*70
+		ship.MainEngineProducer.speed = V2.InDir(ship.angle).Mul(-psspeed).Add(ship.speed)
+		ship.MainEngineProducer.Intense = MaxIntense * thrust
+		ship.MainEngineProducer.color = sdl.Color{byte(100+155*thrust), byte(70*thrust), 0, 255}
 
 		ship.ps.Produce(dt, ship.MainEngineProducer)
 
@@ -109,13 +129,15 @@ func (ship *ShipGameObject) Update(dt float32) {
 }
 
 func (ship ShipGameObject) Draw(r *sdl.Renderer) {
+	//Показ Корабля
 	halfsize:=ship.colRad
 	rect:=f32Rect{ship.pos.X-halfsize, ship.pos.Y-halfsize, 2*halfsize, 2*halfsize}
 	camRect, inCamera := ship.scene.CameraTransformRect(rect)
 	if inCamera {
 		r.CopyEx(ship.tex, nil, camRect, float64(-ship.angle), nil, sdl.FLIP_VERTICAL)
-
-		if ship.animActive {
+	}
+	//Показ анимации огня
+		if inCamera && ship.animActive {
 			ind:=int32(ship.animTime*1000/ship.animSlideTime)%ship.MainEngineFlameTex.totalcount
 			flameRect := ship.MainEngineFlameTex.getRect(ind)
 			flameCentre:=V2.V2{0.05*ship.colRad,-1.4*ship.colRad}.ApplyOnTransform(ship.pos,ship.angle)
@@ -124,10 +146,18 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) {
 			cameraRect,_ := ship.scene.CameraTransformRect(dRect)
 			r.CopyEx(ship.MainEngineFlameTex.tex, flameRect,cameraRect, float64(-ship.angle), nil, sdl.FLIP_NONE)
 		}
-	}
+
+	//Отдельный блок показа UI
+	H:=int32(ship.thrust*float32(winH)*0.8)
+	UIRect:=&sdl.Rect{X:60,
+		Y:winH-30-H,
+		W:40,
+		H:H}
+	ship.arrowTex.SetColorMod(255,0,0)
+	r.CopyEx(ship.arrowTex, nil, UIRect,0,nil,sdl.FLIP_VERTICAL)
 }
 
 //Часть "физического движка", запускается непосредственно перед update
 func (ship *ShipGameObject) ApplyForce(force V2.V2) {
-	ship.ForceSum = ship.ForceSum.Add(force)
+	ship.forceSum = ship.forceSum.Add(force)
 }

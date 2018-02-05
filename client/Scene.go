@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/Shnifer/FlierProto1/V2"
+	"github.com/Shnifer/flierproto1/v2"
 )
 
 //Менеджер объектов, группирующий вызовы главного цикла

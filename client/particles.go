@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Shnifer/FlierProto1/V2"
+	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -17,11 +17,11 @@ type particle struct{
 }
 
 type ProduceStats struct {
-	intense float32
+	Intense        float32
 	intenseCounter float32
-	color sdl.Color
-	lifeTime float32
-	pos, speed V2.V2
+	color          sdl.Color
+	lifeTime       float32
+	pos, speed     V2.V2
 
 	//случайные отклонения, круговой вектор заданого радиуса
 	randpos float32
@@ -67,10 +67,12 @@ func (ps *ParticleSystem) Update(dt float32) {
 }
 
 func (ps *ParticleSystem) Draw(r *sdl.Renderer) {
+
 	for _,v:=range ps.particles{
 		if !v.active {
 			continue
 		}
+		r.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 		r.SetDrawColor(v.color.R,v.color.G,v.color.B,uint8(255*v.restTime/v.lifeTime))
 		x,y:=ps.scene.CameraTransformV2(v.pos)
 		r.DrawPoint(x,y)
@@ -82,7 +84,7 @@ func (ps *ParticleSystem) Draw(r *sdl.Renderer) {
 }
 
 func (ps *ParticleSystem) Produce(dt float32, pStats *ProduceStats) {
-	pStats.intenseCounter += pStats.intense*dt
+	pStats.intenseCounter += pStats.Intense *dt
 	numToProduce:=int(pStats.intenseCounter)
 	if numToProduce==0 {
 		return

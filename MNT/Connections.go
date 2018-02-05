@@ -1,4 +1,4 @@
-package MNT
+package mnt
 
 import (
 	"net"

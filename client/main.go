@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 	"math/rand"
-	"github.com/Shnifer/FlierProto1/MNT"
+	MNT "github.com/Shnifer/flierproto1/mnt"
 	"runtime"
 )
 
@@ -14,7 +14,7 @@ import (
 var winW int32 = 800
 var winH int32 = 600
 
-const MIN_FRAME_MS = 20
+const MIN_FRAME_MS = 10
 
 const ResourcePath = "res/"
 
@@ -60,9 +60,9 @@ func main() {
 
 	var winmode uint32 = sdl.WINDOW_SHOWN
 	//Для полного экрана
-	//winH = mode.H
-	//winW = mode.W
-	//winmode = sdl.WINDOW_FULLSCREEN
+	winH = mode.H
+	winW = mode.W
+	winmode = sdl.WINDOW_FULLSCREEN
 
 	window, err := sdl.CreateWindow("COSMO FLIER", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, winW, winH, winmode)
 	if err != nil {

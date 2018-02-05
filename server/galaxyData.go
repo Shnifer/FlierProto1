@@ -1,20 +1,21 @@
 package main
 
 import (
-	"github.com/Shnifer/FlierProto1/V2"
-	"github.com/Shnifer/FlierProto1/MNT"
+	V2 "github.com/Shnifer/flierproto1/v2"
+	MNT "github.com/Shnifer/flierproto1/mnt"
 	"math/rand"
+	"strconv"
 )
 
 //Диаметр галактики в абсолютных космических единицах
-const GalaxyRadius float32 = 5000
-const NumStars = 100
+const GalaxyRadius float32 = 20000
+const NumStars = 1500
 
-func randomStar() *MNT.Star{
+func randomStar(num int) *MNT.Star{
 	const minRadius = 20
 	const maxRadius = 60
-	const maxSpeed = 10
-	const maxMass = 1000
+	const maxSpeed = 0
+	const maxMass = 600
 	const minMass = 100
 
 	sizeK:=rand.Float32()
@@ -24,14 +25,14 @@ func randomStar() *MNT.Star{
 		Dir: V2.RandomInCircle(maxSpeed),
 		ColRad: sizeK*(maxRadius-minRadius)+minRadius,
 		Mass: sizeK*(maxMass-minMass)+minMass,
-		ObservText: "science data text",
+		ObservText: "IDN: "+strconv.Itoa(num),
 	}
 }
 
 func GenerateRandomGalaxy() {
 	MNT.GalaxyData = make([]*MNT.Star, NumStars)
 	for i:=0;i<NumStars;i++{
-		Star:=randomStar()
+		Star:=randomStar(i)
 		MNT.GalaxyData[i] = Star
 	}
 }
