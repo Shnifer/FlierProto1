@@ -74,6 +74,25 @@ func (ps *PilotScene) Update(dt float32) {
 		ps.Ship.ApplyForce(force)
 	}
 
+	//ВНЕШНИЕ ПРЯМЫЕ ВОЗДЕЙСТВИЯ НИ КИНЕМАТИКУ КОРАБЛЯ
+	if ps.ControlHandler.GetKey(sdl.SCANCODE_SPACE) {
+		ps.Ship.speed=V2.V2{}
+		ps.Ship.anglespeed=0
+	}
+
+	if ps.ControlHandler.GetKey(sdl.SCANCODE_KP_ENTER) {
+		ps.Ship.speed=V2.V2{}
+		ps.Ship.anglespeed=0
+		startLoc := ps.GetObjByID(DEFVAL.StartLocationName)
+		if startLoc!=nil{
+			pos,_:=startLoc.(HugeMass).GetGravState()
+			ps.Ship.pos = pos.Add( DEFVAL.StartLocationOffset)
+		} else {
+			ps.Ship.pos = DEFVAL.StartLocationOffset
+		}
+	}
+
+
 	s.Update(dt)
 
 	//Сдвинули камеру

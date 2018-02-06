@@ -109,11 +109,21 @@ func main() {
 	//Параметр сглаживания массштабирования
 	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "1")
 
+	//Joystick 0 initialize
+	var Joystick *sdl.Joystick
+	if sdl.NumJoysticks()>0 {
+		Joystick = sdl.JoystickOpen(sdl.JoystickID(0))
+		log.Println("Joystick detected")
+		defer Joystick.Close()
+	}else{
+		log.Println("Nojoystick")
+	}
+
 	log.Println("login")
 	MNT.LoginToServer(MNT.RoomName,MNT.ROLE_PILOT)
 	MNT.DownloadGalaxy()
 
-	ControlHandler:=newControlHandler()
+	ControlHandler:=newControlHandler(Joystick)
 
 	PilotScene := NewPilotScene(renderer, ControlHandler)
 	PilotScene.Init()
@@ -147,10 +157,14 @@ loop:
 				}
 				//Остальное в хэндлере
 				ControlHandler.handleSDLKeyboardEvent(ev)
+			case *sdl.MouseMotionEvent:
+			case *sdl.JoyButtonEvent:
+				ControlHandler.handleJoyButtonEvent(ev)
 			default:
-				//log.Printf("event: %T",ev)
+
 			}
 		}
+		ControlHandler.updateJoystickAxis()
 
 		//Цикл обработки каналов и сообщений в главном треде,
 		// выбирает все, поэтому должен быть быстрым

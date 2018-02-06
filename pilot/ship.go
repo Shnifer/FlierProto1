@@ -83,29 +83,39 @@ func (ship *ShipGameObject) Init(scene *Scene) {
 func (ship *ShipGameObject) Update(dt float32) {
 	CH := ship.scene.ControlHandler
 
-	//Поворачиваем на угол инрции
+	var cAngAxel float32
+	if CH.Joystick == nil {
+		//Поворачиваем на угол инрции
+
+		if CH.GetKey(sdl.SCANCODE_A) {
+			cAngAxel += ship.angAxel
+		}
+		if CH.GetKey(sdl.SCANCODE_D) {
+			cAngAxel -= ship.angAxel
+		}
+
+		if CH.GetKey(sdl.SCANCODE_W) {
+			ship.thrust += ship.thrustaxel * dt
+		}
+		if CH.GetKey(sdl.SCANCODE_S) {
+			ship.thrust -= ship.thrustaxel * dt
+		}
+	}
+
+	if CH.Joystick!=nil {
+		ship.thrust += ship.thrustaxel *CH.AxisY*dt
+		cAngAxel -= ship.angAxel*CH.AxisX
+	}
+
+	if ship.thrust > 1 {
+		ship.thrust = 1
+	}
+	if ship.thrust < (0) {
+		ship.thrust = 0
+	}
+
 	ship.angle += ship.anglespeed * dt
-
-	if CH.GetKey(sdl.SCANCODE_A) {
-		ship.anglespeed += (ship.angAxel * dt)
-	}
-	if CH.GetKey(sdl.SCANCODE_D) {
-		ship.anglespeed -= (ship.angAxel * dt)
-	}
-
-	if CH.GetKey(sdl.SCANCODE_W) {
-		ship.thrust += ship.thrustaxel * dt
-		if ship.thrust > 1 {
-			ship.thrust = 1
-		}
-	}
-	if CH.GetKey(sdl.SCANCODE_S) {
-		ship.thrust -= ship.thrustaxel * dt
-		if ship.thrust < (0) {
-			ship.thrust = 0
-		}
-	}
-
+	ship.anglespeed += cAngAxel * dt
 	//Расчитываем и добавляем силу движка к уже посчитаной гравитации
 	ThrustForce := V2.InDir(ship.angle).Mul(ship.thrust * ship.maxThrustForce * dt)
 	ship.ApplyForce(ThrustForce)
@@ -160,8 +170,8 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) {
 		flameRect := ship.MainEngineFlameTex.getRect(ind)
 		var cameraRect *sdl.Rect
 		if showFixedSized {
-			flameCentre := V2.V2{0 * float32(DEFVAL.ShipFixedSize)/ship.scene.CameraScale,
-			-1.4 * float32(DEFVAL.ShipFixedSize)/ship.scene.CameraScale}.ApplyOnTransform(ship.pos, ship.angle)
+			flameCentre := V2.V2{0 * float32(DEFVAL.ShipFixedSize) / ship.scene.CameraScale,
+				-1.4 * float32(DEFVAL.ShipFixedSize) / ship.scene.CameraScale}.ApplyOnTransform(ship.pos, ship.angle)
 			cameraRect, _ = ship.scene.CameraRectByCenterAndSize(flameCentre, DEFVAL.ShipFixedSize)
 		} else {
 			flameCentre := V2.V2{0.05 * ship.colRad, -1.4 * ship.colRad}.ApplyOnTransform(ship.pos, ship.angle)
