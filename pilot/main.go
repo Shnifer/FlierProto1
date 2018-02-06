@@ -15,7 +15,7 @@ var winW int32
 var winH int32
 
 const ResourcePath = "res/"
-const ClientDataPath = ResourcePath+"client/"
+const ClientDataPath = ResourcePath+"pilot/"
 
 func ListenAndShowFPS() chan<- int {
 	c:=make (chan int)
