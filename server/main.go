@@ -94,11 +94,20 @@ func newSenderConn(conn net.Conn) chan string{
 
 var	OutSender map[net.Conn]chan string
 
+const serverDataPath = "res/server/"
+
 //Главный тред
 func main() {
 
+	LoadDefVals(serverDataPath)
+
 	rand.Seed(time.Now().Unix())
-	GenerateRandomGalaxy()
+
+	if DEFVAL.LoadGalaxyFile!="" {
+		LoadGalaxyFromFile()
+	} else {
+		GenerateRandomGalaxy()
+	}
 
 	NextID = CreateGenerator()
 
@@ -113,7 +122,7 @@ func main() {
 
 	OutSender=make(map[net.Conn]chan string)
 
-	listener, err := net.Listen("tcp", MNT.TcpPort)
+	listener, err := net.Listen("tcp", DEFVAL.tcpPort)
 	if err != nil {
 		log.Println(err)
 	}

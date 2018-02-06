@@ -12,6 +12,10 @@ func newStaticImage(texName string) *staticImage{
 	return &staticImage{texName:texName}
 }
 
+func (si *staticImage) GetID() string {
+	return ""
+}
+
 func (si *staticImage) Init(scene *Scene) {
 	si.scene = scene
 	//TODO: огут быть разные статичные картинки, а не только фон

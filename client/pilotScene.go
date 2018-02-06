@@ -23,7 +23,8 @@ func (PilotScene *PilotScene) Init() {
 	BackGround := newStaticImage("background.jpg")
 	PilotScene.AddObject(SceneObject(BackGround))
 
-	Particles := newParticleSystem(1000)
+
+	Particles := newParticleSystem(DEFVAL.MainEngineMaxParticles)
 	PilotScene.AddObject(SceneObject(Particles))
 
 	//DATA INIT
@@ -37,10 +38,28 @@ func (PilotScene *PilotScene) Init() {
 	PilotScene.Ship = Ship
 	PilotScene.AddObject(SceneObject(Ship))
 
+	startLoc := PilotScene.GetObjByID(DEFVAL.StartLocationName)
+	if startLoc!=nil{
+		pos,_:=startLoc.(HugeMass).GetGravState()
+		Ship.pos = pos.Add( DEFVAL.StartLocationOffset)
+	} else {
+		Ship.pos = DEFVAL.StartLocationOffset
+	}
+
 	FrontCabin := newStaticImage("cabinBorder.png")
 	PilotScene.AddObject(SceneObject(FrontCabin))
 
 	PilotScene.Scene.Init()
+}
+
+//Возвращает силу тяжести, точнее ускорение для заданной массы и заданного пробного положения
+func GravityForce (attractor HugeMass, body V2.V2) V2.V2 {
+	pos, mass := attractor.GetGravState()
+	ort := V2.Sub(pos, body).Normed()
+	dist2 := V2.Sub(pos, body).LenSqr() + DEFVAL.GravityDepthSqr
+	Amp := DEFVAL.GravityConst * mass / dist2
+	force := ort.Mul(Amp)
+	return force
 }
 
 func (ps *PilotScene) Update(dt float32) {
@@ -51,11 +70,7 @@ func (ps *PilotScene) Update(dt float32) {
 		if !ok {
 			continue
 		}
-		pos, mass := attractor.GetGravState()
-		ort := V2.Sub(pos, ps.Ship.pos).Normed()
-		dist2 := V2.Sub(pos, ps.Ship.pos).LenSqr() + DepthSqr
-		Amp := GravityConst * mass / dist2
-		force := ort.Mul(Amp)
+		force := GravityForce(attractor,ps.Ship.pos)
 		ps.Ship.ApplyForce(force)
 	}
 
@@ -71,56 +86,65 @@ func (ps PilotScene) Draw() {
 	s := ps.Scene
 	s.Draw()
 
+	GizmoGravityForceK:=DEFVAL.GizmoGravityForceK
 	//Отрисовка "Гизмосов" гравитации
-	sumForce := V2.V2{}
-	for _, obj := range s.Objects {
-		attractor, ok := obj.(HugeMass)
-		if !ok {
-			continue
-		}
-		// Гизмос Наш вектор
-		pos, mass := attractor.GetGravState()
-		ort := V2.Sub(pos, ps.Ship.pos).Normed()
-		dist2 := V2.Sub(pos, ps.Ship.pos).LenSqr() + DepthSqr
-		Amp := GravityConst * mass / dist2
-		force := ort.Mul(Amp)
-		s.R.SetDrawColor(0, 0, 255, 255)
-		s.R.DrawLine(winW/2, winH/2, winW/2+int32(force.X), winH/2+int32(force.Y))
-		sumForce = sumForce.Add(force)
+	if DEFVAL.ShowGizmoGravityRound || DEFVAL.ShowGizmoGravityForce {
+		sumForce := V2.V2{}
 
-
-		const GizmoGravConst = GravityConst * 0.001
-		const dotsInCirle = 64
-		var GizmoGravLevels = [...]float32{0.3, 0.1, 0.05}
-		//Гизмос вокруг планеты
-
-		levelsCount := len(GizmoGravLevels)
-
-		points := make([]sdl.Point, dotsInCirle+1)
-
-		for level := 0; level < levelsCount; level++ {
-
-			GravRadSqr := mass / GizmoGravLevels[level] * GizmoGravConst
-			GravRad := float32(math.Sqrt(float64(GravRadSqr)))
-			rect := f32Rect{pos.X - GravRad, pos.Y - GravRad, 2 * GravRad, 2 * GravRad}
-			_, inCamera := ps.CameraTransformRect(rect)
-			if !inCamera {
+		for _, obj := range s.Objects {
+			attractor, ok := obj.(HugeMass)
+			if !ok {
 				continue
 			}
 
-			//n+1 чтобы замкнуть круг
-			for a := 0; a <= dotsInCirle; a++ {
-				dot := pos.AddMul(V2.InDir(float32(a*360/dotsInCirle)), GravRad)
-				x, y := ps.CameraTransformV2(dot)
-				points[a] = sdl.Point{x, y}
+			pos,mass:=attractor.GetGravState()
+
+			if DEFVAL.ShowGizmoGravityForce {
+				// Гизмос Наш вектор
+				force := GravityForce(attractor, ps.Ship.pos).Mul(GizmoGravityForceK)
+
+				s.R.SetDrawColor(0, 0, 255, 255)
+				s.R.DrawLine(winW/2, winH/2, winW/2+int32(force.X), winH/2+int32(force.Y))
+				sumForce = sumForce.Add(force)
 			}
-			s.R.SetDrawColor(128, 128, 128, 128)
-			s.R.DrawLines(points)
+
+			if DEFVAL.ShowGizmoGravityRound {
+				dotsInCirle := DEFVAL.GizmoGravityRoundDotsInCirle
+				var GizmoGravLevels= DEFVAL.GizmoGravityRoundLevels
+				//Гизмос вокруг планеты
+
+				levelsCount := len(GizmoGravLevels)
+
+				points := make([]sdl.Point, dotsInCirle+1)
+
+				for level := 0; level < levelsCount; level++ {
+
+					//GizmoLevel - сила(ускорение)
+					//GizmoLevel = GravityConst*mass/RadSqr
+					GravRadSqr := DEFVAL.GravityConst*mass / GizmoGravLevels[level]
+					GravRad := float32(math.Sqrt(float64(GravRadSqr)))
+					rect := f32Rect{pos.X - GravRad, pos.Y - GravRad, 2 * GravRad, 2 * GravRad}
+					_, inCamera := ps.CameraTransformRect(rect)
+					if !inCamera {
+						continue
+					}
+
+					//n+1 чтобы замкнуть круг
+					for a := 0; a <= dotsInCirle; a++ {
+						dot := pos.AddMul(V2.InDir(float32(a*360/dotsInCirle)), GravRad)
+						x, y := ps.CameraTransformV2(dot)
+						points[a] = sdl.Point{x, y}
+					}
+					s.R.SetDrawColor(128, 128, 128, 128)
+					s.R.DrawLines(points)
+				}
+			}
 		}
 
+		if DEFVAL.ShowGizmoGravityForce {
+			//Гизмос наш суммарный вектор
+			s.R.SetDrawColor(0, 255, 0, 255)
+			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.X), winH/2+int32(sumForce.Y))
+		}
 	}
-
-	//Гизмос наш суммарный вектор
-	s.R.SetDrawColor(0, 255, 0, 255)
-	s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.X), winH/2+int32(sumForce.Y))
 }

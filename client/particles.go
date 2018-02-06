@@ -46,6 +46,10 @@ func newParticleSystem(maxCount int) *ParticleSystem{
 	}
 }
 
+func (ps *ParticleSystem) GetID() string {
+	return ""
+}
+
 func (ps *ParticleSystem) Init(scene *Scene) {
 	ps.scene = scene
 }

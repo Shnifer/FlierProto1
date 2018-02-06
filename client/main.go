@@ -11,12 +11,11 @@ import (
 
 //Константы экрана
 //TODO:вынести параметры экрана во внешний файл конфигурации
-var winW int32 = 800
-var winH int32 = 600
-
-const MIN_FRAME_MS = 10
+var winW int32
+var winH int32
 
 const ResourcePath = "res/"
+const ClientDataPath = ResourcePath+"client/"
 
 func ListenAndShowFPS() chan<- int {
 	c:=make (chan int)
@@ -32,6 +31,7 @@ func ListenAndShowFPS() chan<- int {
 
 type GameState byte
 const(
+	//TODO: Экран перезагрузки
 	state_Login GameState = iota
 	state_PilotSpace
 	state_NaviSpace
@@ -41,10 +41,13 @@ func main() {
 
 	runtime.LockOSThread()
 
+	LoadDefVals(ClientDataPath)
+	MIN_FRAME_MS:=DEFVAL.MIN_FRAME_MS
+
 	rand.Seed(time.Now().Unix())
 
 	log.Println("Connecting to Server...")
-	if err:=MNT.ConnectToServer();err!=nil{
+	if err:=MNT.ConnectToServer(DEFVAL.ServerName, DEFVAL.tcpPort);err!=nil{
 		log.Panicln(err)
 	}
 
@@ -60,9 +63,13 @@ func main() {
 
 	var winmode uint32 = sdl.WINDOW_SHOWN
 	//Для полного экрана
+	if DEFVAL.FullScreen {
 	winH = mode.H
 	winW = mode.W
-	winmode = sdl.WINDOW_FULLSCREEN
+	winmode = sdl.WINDOW_FULLSCREEN} else {
+		winH = DEFVAL.WinH
+		winW = DEFVAL.WinW
+	}
 
 	window, err := sdl.CreateWindow("COSMO FLIER", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, winW, winH, winmode)
 	if err != nil {
@@ -70,7 +77,13 @@ func main() {
 	}
 	defer window.Destroy()
 
-	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	var ACCELERATED uint32
+	if DEFVAL.RENDERER_ACCELERATED {
+		ACCELERATED = sdl.RENDERER_ACCELERATED
+	}else{
+		ACCELERATED = sdl.RENDERER_SOFTWARE
+	}
+	renderer, err := sdl.CreateRenderer(window, -1, ACCELERATED)
 	if err != nil {
 		log.Panicln(err)
 	}

@@ -95,7 +95,7 @@ func LoginToServer(room, role string) error{
 	return nil
 }
 
-func ConnectToServer() error {
+func ConnectToServer(ServerName,TcpPort string) error {
 	const maxtry  = 3
 
 	//УСТАНАВЛИВАЕМ СОЕДИНЕНИЕ

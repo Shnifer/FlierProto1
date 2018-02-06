@@ -7,10 +7,7 @@ import (
 
 //Менеджер объектов, группирующий вызовы главного цикла
 
-const GravityConst = 5000
 //Расстояние по Z для избежания нулевой дистанции гравитирования
-const DepthSqr = 1000
-
 type f32Rect struct{
 	X,Y,W,H float32
 }
@@ -23,6 +20,7 @@ type SceneObject interface{
 	Init(s *Scene)
 	Update(dt float32)
 	Draw(r *sdl.Renderer)
+	GetID() string
 }
 
 type HugeMass interface {
@@ -35,8 +33,7 @@ type Scene struct {
 	ControlHandler *controlHandler
 	//TODO: структура с сортировкой по Z-order
 	Objects []SceneObject
-
-
+	idmap map[string]SceneObject
 	//Пока что камера -- свойство сцены
 
 	//ЦентрКамеры в мировых координатах
@@ -47,7 +44,7 @@ type Scene struct {
 }
 
 func NewScene(r *sdl.Renderer, ch *controlHandler) *Scene{
-	return &Scene{R: r, CameraScale:1, ControlHandler:ch}
+	return &Scene{R: r, CameraScale:10, ControlHandler:ch, idmap:make(map[string]SceneObject)}
 }
 
 func (s Scene) CameraTransformV2(v V2.V2) (x,y int32) {
@@ -71,8 +68,25 @@ func (s Scene) CameraTransformRect(r f32Rect) (camRect *sdl.Rect, inCamera bool)
 	return &res, inCamera
 }
 
+func (s Scene) CameraRectByCenterAndSize(center V2.V2, halfsize int32) (camRect *sdl.Rect, inCamera bool) {
+	x,y:= s.CameraTransformV2(center)
+	res:=sdl.Rect{
+		x-halfsize,
+		y-halfsize,
+		2*halfsize,
+		2*halfsize,
+	}
+
+	inCamera = !(res.X+res.W<0 || res.X >winW || res.Y>winH || res.Y+res.H<0)
+	return &res, inCamera
+}
+
 func (s *Scene) AddObject(obj SceneObject) {
 	s.Objects = append(s.Objects, obj)
+	id:=obj.GetID()
+	if id!="" {
+		s.idmap[id] = obj
+	}
 }
 
 func (scene *Scene) Init() {
@@ -100,4 +114,8 @@ func (s Scene) Draw() {
 	for i:=range s.Objects{
 		s.Objects[i].Draw(s.R)
 	}
+}
+
+func (s Scene) GetObjByID (name string) SceneObject{
+	return s.idmap[name]
 }

@@ -16,6 +16,3 @@ const (
 	ROLE_NAVIGATOR = "navigator"
 	ROLE_CARGO = "cargo"
 )
-
-const ServerName  = "localhost"
-const TcpPort = ":6666"
