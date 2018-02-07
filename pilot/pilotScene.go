@@ -10,12 +10,14 @@ import (
 
 type PilotScene struct {
 	*Scene
-	Ship *ShipGameObject
+	Ship          *ShipGameObject
+	gravityCalc3D bool
 }
 
 func NewPilotScene(r *sdl.Renderer, ch *controlHandler) *PilotScene {
 	return &PilotScene{
-		Scene: NewScene(r, ch),
+		Scene:         NewScene(r, ch),
+		gravityCalc3D: DEFVAL.gravityCalc3D,
 	}
 }
 
@@ -52,11 +54,15 @@ func (PilotScene *PilotScene) Init() {
 }
 
 //Возвращает силу тяжести, точнее ускорение для заданной массы и заданного пробного положения
-func GravityForce(attractor HugeMass, body V2.V2) V2.V2 {
+func GravityForce(attractor HugeMass, body V2.V2, Calc3D bool) V2.V2 {
 	pos, mass := attractor.GetGravState()
 	ort := V2.Sub(pos, body).Normed()
-	dist2 := V2.Sub(pos, body).LenSqr() + DEFVAL.GravityDepthSqr
-	Amp := DEFVAL.GravityConst * mass / dist2
+	dist2 := V2.Sub(pos, body).LenSqr()
+	distFull2 := dist2 + DEFVAL.GravityDepthSqr
+	Amp := DEFVAL.GravityConst * mass / distFull2
+	if Calc3D {
+		Amp = Amp * float32(math.Sqrt(float64(dist2/distFull2)))
+	}
 	force := ort.Mul(Amp)
 	return force
 }
@@ -69,7 +75,7 @@ func (ps *PilotScene) Update(dt float32) {
 		if !ok {
 			continue
 		}
-		force := GravityForce(attractor, ps.Ship.pos)
+		force := GravityForce(attractor, ps.Ship.pos, ps.gravityCalc3D)
 		ps.Ship.ApplyForce(force)
 	}
 
@@ -98,6 +104,14 @@ func (ps *PilotScene) Update(dt float32) {
 	}
 	if ps.ControlHandler.GetKey(sdl.SCANCODE_2) {
 		ps.Ship.showFixed = false
+	}
+	if ps.ControlHandler.GetKey(sdl.SCANCODE_3) {
+		log.Println("disable 3D gravity")
+		ps.gravityCalc3D = false
+	}
+	if ps.ControlHandler.GetKey(sdl.SCANCODE_4) {
+		log.Println("enable 3D gravity")
+		ps.gravityCalc3D = true
 	}
 
 	//АПДЕЙТ СЦЕНЫ
@@ -134,7 +148,7 @@ func (ps PilotScene) Draw() {
 
 			if DEFVAL.ShowGizmoGravityForce {
 				// Гизмос Наш вектор
-				force := GravityForce(attractor, ps.Ship.pos).Mul(GizmoGravityForceK)
+				force := GravityForce(attractor, ps.Ship.pos, ps.gravityCalc3D).Mul(GizmoGravityForceK)
 
 				s.R.SetDrawColor(0, 0, 255, 255)
 				s.R.DrawLine(winW/2, winH/2, winW/2+int32(force.X), winH/2+int32(force.Y))

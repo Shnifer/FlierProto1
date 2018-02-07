@@ -71,6 +71,7 @@ func (ch *controlHandler) updateJoystickAxis() {
 	}
 	x := ch.Joystick.GetAxis(0)
 	y := ch.Joystick.GetAxis(1)
+
 	ch.mu.Lock()
 	zz := int16(JoyAxisZerozone)
 	if x > -zz && x < zz {

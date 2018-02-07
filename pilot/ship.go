@@ -3,7 +3,6 @@ package main
 import (
 	V2 "github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
-	"log"
 )
 
 type ShipGameObject struct {
@@ -140,8 +139,7 @@ func (ship *ShipGameObject) Update(dt float32) {
 		childPos := V2.V2{0, -1.4}.Mul(ship.colRad)
 		ship.MainEngineProducer.pos = childPos.ApplyOnTransform(ship.pos, ship.angle)
 		psspeed := 0.2 + thrust*3*ship.colRad
-		ship.MainEngineProducer.speed = V2.InDir(180+ship.angle).Mul(psspeed).Add(ship.speed)
-		log.Println(ship.angle, V2.InDir(180+ship.angle))
+		ship.MainEngineProducer.speed = V2.InDir(180 + ship.angle).Mul(psspeed).Add(ship.speed)
 		ship.MainEngineProducer.Intense = DEFVAL.MainEngineParticlesMaxIntense * thrust
 		ship.MainEngineProducer.color = sdl.Color{byte(100 + 155*thrust), byte(70 * thrust), 0, 255}
 

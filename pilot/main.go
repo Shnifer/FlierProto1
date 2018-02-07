@@ -1,12 +1,12 @@
 package main
 
 import (
-	MNT "github.com/Shnifer/flierproto1/mnt"
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
-	"math/rand"
 	"runtime"
 	"time"
+	"fmt"
+	MNT "github.com/Shnifer/flierproto1/mnt"
 )
 
 //Константы экрана
@@ -42,88 +42,12 @@ func main() {
 
 	runtime.LockOSThread()
 
-	LoadDefVals(ClientDataPath)
+	deferMe, renderer, Joystick := InitSomeShit()
+	defer deferMe()
+
+	fmt.Println("got",renderer,Joystick)
+
 	MIN_FRAME_MS := DEFVAL.MIN_FRAME_MS
-
-	rand.Seed(time.Now().Unix())
-
-	log.Println("Connecting to Server...")
-	if err := MNT.ConnectToServer(DEFVAL.ServerName, DEFVAL.tcpPort); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
-		log.Panicln(err)
-	}
-	defer sdl.Quit()
-
-	var mode sdl.DisplayMode
-	if err := sdl.GetDesktopDisplayMode(0, &mode); err != nil {
-		log.Panic(err)
-	}
-
-	var winmode uint32 = sdl.WINDOW_SHOWN
-	//Для полного экрана
-	if DEFVAL.FullScreen {
-		winH = mode.H
-		winW = mode.W
-		winmode = sdl.WINDOW_FULLSCREEN
-	} else {
-		winH = DEFVAL.WinH
-		winW = DEFVAL.WinW
-	}
-
-	window, err := sdl.CreateWindow("COSMO FLIER", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, winW, winH, winmode)
-	if err != nil {
-		log.Panicln(err)
-	}
-	defer window.Destroy()
-
-	var ACCELERATED uint32
-	if DEFVAL.RENDERER_ACCELERATED {
-		ACCELERATED = sdl.RENDERER_ACCELERATED
-	} else {
-		ACCELERATED = sdl.RENDERER_SOFTWARE
-	}
-	renderer, err := sdl.CreateRenderer(window, -1, ACCELERATED)
-	if err != nil {
-		log.Panicln(err)
-	}
-	defer renderer.Destroy()
-
-	//Создаём кэш текстур В ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ
-	TCache = newTexCache(renderer)
-
-	/*
-		Закрыто чтобы не свистело. Имеет смысл включать по необходимости
-		if err := mix.OpenAudio(mix.DEFAULT_FREQUENCY, mix.DEFAULT_FORMAT, mix.DEFAULT_CHANNELS, mix.DEFAULT_CHUNKSIZE); err != nil {
-			log.Panicln(err)
-		}
-		defer mix.CloseAudio()
-	*/
-
-	//Загрузка Аудио файла
-	//chunk, err := mix.LoadWAV("res/explode.wav")
-	//if err != nil {
-	//	log.Panicln(err)
-	//}
-
-	//Параметр сглаживания массштабирования
-	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "1")
-
-	//Joystick 0 initialize
-	var Joystick *sdl.Joystick
-	if sdl.NumJoysticks() > 0 {
-		Joystick = sdl.JoystickOpen(sdl.JoystickID(0))
-		log.Println("Joystick detected")
-		defer Joystick.Close()
-	} else {
-		log.Println("Nojoystick")
-	}
-
-	log.Println("login")
-	MNT.LoginToServer(MNT.RoomName, MNT.ROLE_PILOT)
-	MNT.DownloadGalaxy()
 
 	ControlHandler := newControlHandler(Joystick)
 

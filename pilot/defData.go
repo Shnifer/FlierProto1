@@ -16,6 +16,7 @@ type tDefVals struct {
 	RENDERER_ACCELERATED          bool
 	GravityConst                  float32
 	GravityDepthSqr               float32
+	gravityCalc3D                 bool
 	StartLocationName             string
 	StartLocationOffset           V2.V2
 	ShowGizmoGravityForce         bool
