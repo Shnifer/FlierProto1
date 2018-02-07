@@ -1,5 +1,6 @@
 {"ServerName":"localhost",
   "MIN_FRAME_MS":10,
+  "MIN_PHYS_MS":3,
   "FullScreen":false,
   "WinW":1024,
   "WinH":768,

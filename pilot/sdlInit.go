@@ -1,12 +1,12 @@
 package main
 
 import (
-	"github.com/veandco/go-sdl2/sdl"
-	"time"
 	"fmt"
-	"math/rand"
-	"log"
 	MNT "github.com/Shnifer/flierproto1/mnt"
+	"github.com/veandco/go-sdl2/sdl"
+	"log"
+	"math/rand"
+	"time"
 )
 
 //Инициализация SDL, загрузка файлов среды, установление сетевого соединения, загрузка галактики
@@ -56,7 +56,6 @@ func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
 	//Параметр сглаживания массштабирования
 	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "1")
 
-
 	//Создаём кэш текстур В ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ
 	TCache = newTexCache(renderer)
 
@@ -81,6 +80,6 @@ func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
 	MNT.LoginToServer(MNT.RoomName, MNT.ROLE_PILOT)
 	MNT.DownloadGalaxy()
 
-	fmt.Println("returned",renderer,Joystick)
+	fmt.Println("returned", renderer, Joystick)
 	return deferMe, renderer, Joystick
 }
