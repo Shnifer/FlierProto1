@@ -1,12 +1,12 @@
 package main
 
 import (
+	MNT "github.com/Shnifer/flierproto1/mnt"
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
-	"time"
 	"math/rand"
-	MNT "github.com/Shnifer/flierproto1/mnt"
 	"runtime"
+	"time"
 )
 
 //Константы экрана
@@ -15,14 +15,14 @@ var winW int32
 var winH int32
 
 const ResourcePath = "res/"
-const ClientDataPath = ResourcePath+"pilot/"
+const ClientDataPath = ResourcePath + "pilot/"
 
 func ListenAndShowFPS() chan<- int {
-	c:=make (chan int)
-	lastFrameN:=0
-	go func(){
-		for frame:=range c{
-			log.Println("FPS:",frame-lastFrameN)
+	c := make(chan int)
+	lastFrameN := 0
+	go func() {
+		for frame := range c {
+			log.Println("FPS:", frame-lastFrameN)
 			lastFrameN = frame
 		}
 	}()
@@ -30,7 +30,8 @@ func ListenAndShowFPS() chan<- int {
 }
 
 type GameState byte
-const(
+
+const (
 	//TODO: Экран перезагрузки
 	state_Login GameState = iota
 	state_PilotSpace
@@ -42,12 +43,12 @@ func main() {
 	runtime.LockOSThread()
 
 	LoadDefVals(ClientDataPath)
-	MIN_FRAME_MS:=DEFVAL.MIN_FRAME_MS
+	MIN_FRAME_MS := DEFVAL.MIN_FRAME_MS
 
 	rand.Seed(time.Now().Unix())
 
 	log.Println("Connecting to Server...")
-	if err:=MNT.ConnectToServer(DEFVAL.ServerName, DEFVAL.tcpPort);err!=nil{
+	if err := MNT.ConnectToServer(DEFVAL.ServerName, DEFVAL.tcpPort); err != nil {
 		log.Panicln(err)
 	}
 
@@ -57,16 +58,17 @@ func main() {
 	defer sdl.Quit()
 
 	var mode sdl.DisplayMode
-	if err:=sdl.GetDesktopDisplayMode(0, &mode); err!=nil{
+	if err := sdl.GetDesktopDisplayMode(0, &mode); err != nil {
 		log.Panic(err)
 	}
 
 	var winmode uint32 = sdl.WINDOW_SHOWN
 	//Для полного экрана
 	if DEFVAL.FullScreen {
-	winH = mode.H
-	winW = mode.W
-	winmode = sdl.WINDOW_FULLSCREEN} else {
+		winH = mode.H
+		winW = mode.W
+		winmode = sdl.WINDOW_FULLSCREEN
+	} else {
 		winH = DEFVAL.WinH
 		winW = DEFVAL.WinW
 	}
@@ -80,7 +82,7 @@ func main() {
 	var ACCELERATED uint32
 	if DEFVAL.RENDERER_ACCELERATED {
 		ACCELERATED = sdl.RENDERER_ACCELERATED
-	}else{
+	} else {
 		ACCELERATED = sdl.RENDERER_SOFTWARE
 	}
 	renderer, err := sdl.CreateRenderer(window, -1, ACCELERATED)
@@ -93,11 +95,11 @@ func main() {
 	TCache = newTexCache(renderer)
 
 	/*
-	Закрыто чтобы не свистело. Имеет смысл включать по необходимости
-	if err := mix.OpenAudio(mix.DEFAULT_FREQUENCY, mix.DEFAULT_FORMAT, mix.DEFAULT_CHANNELS, mix.DEFAULT_CHUNKSIZE); err != nil {
-		log.Panicln(err)
-	}
-	defer mix.CloseAudio()
+		Закрыто чтобы не свистело. Имеет смысл включать по необходимости
+		if err := mix.OpenAudio(mix.DEFAULT_FREQUENCY, mix.DEFAULT_FORMAT, mix.DEFAULT_CHANNELS, mix.DEFAULT_CHUNKSIZE); err != nil {
+			log.Panicln(err)
+		}
+		defer mix.CloseAudio()
 	*/
 
 	//Загрузка Аудио файла
@@ -111,30 +113,30 @@ func main() {
 
 	//Joystick 0 initialize
 	var Joystick *sdl.Joystick
-	if sdl.NumJoysticks()>0 {
+	if sdl.NumJoysticks() > 0 {
 		Joystick = sdl.JoystickOpen(sdl.JoystickID(0))
 		log.Println("Joystick detected")
 		defer Joystick.Close()
-	}else{
+	} else {
 		log.Println("Nojoystick")
 	}
 
 	log.Println("login")
-	MNT.LoginToServer(MNT.RoomName,MNT.ROLE_PILOT)
+	MNT.LoginToServer(MNT.RoomName, MNT.ROLE_PILOT)
 	MNT.DownloadGalaxy()
 
-	ControlHandler:=newControlHandler(Joystick)
+	ControlHandler := newControlHandler(Joystick)
 
 	PilotScene := NewPilotScene(renderer, ControlHandler)
 	PilotScene.Init()
 	//Проверочный показывать фпс, он же заглушка на систему каналов
-	fpsTick:=time.Tick(1000*time.Millisecond)
-	cfps:=ListenAndShowFPS()
+	fpsTick := time.Tick(1000 * time.Millisecond)
+	cfps := ListenAndShowFPS()
 	defer close(cfps)
 
 	lastFrame := time.Now()
 
-	frameN:=0
+	frameN := 0
 loop:
 	for {
 		frameN++
@@ -145,14 +147,14 @@ loop:
 
 		//Проверяем и хэндлим события СДЛ. Выход -- обязательно, а то не закроется
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch ev:=event.(type) {
+			switch ev := event.(type) {
 			case *sdl.QuitEvent:
 				log.Println("quit")
 				break loop
 			case *sdl.KeyboardEvent:
 				//Кнопку выходи обрабатываем здесь, чтобы порвать главный цикл
-				scan:=ev.Keysym.Scancode
-				if scan==sdl.SCANCODE_ESCAPE {
+				scan := ev.Keysym.Scancode
+				if scan == sdl.SCANCODE_ESCAPE {
 					break loop
 				}
 				//Остальное в хэндлере
@@ -168,13 +170,13 @@ loop:
 
 		//Цикл обработки каналов и сообщений в главном треде,
 		// выбирает все, поэтому должен быть быстрым
-		selectloop:
+	selectloop:
 		for {
-			select{
-				case <-fpsTick:
-					cfps<-frameN
-				default:
-					break selectloop
+			select {
+			case <-fpsTick:
+				cfps <- frameN
+			default:
+				break selectloop
 			}
 		}
 
@@ -213,9 +215,9 @@ loop:
 	}
 }
 
-func timeCheck(caption string) func(){
-	Start:=time.Now()
-	return func(){
+func timeCheck(caption string) func() {
+	Start := time.Now()
+	return func() {
 		log.Println(caption, time.Since(Start).Seconds()*1000, "ms")
 	}
 }

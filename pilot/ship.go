@@ -3,21 +3,23 @@ package main
 import (
 	V2 "github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
+	"log"
 )
 
 type ShipGameObject struct {
 	//Ship data включаем, пока нет других корабликов (значимых а не маркеров)
 
 	//TODO: тут данные похожи на звезду. Выяснить что входит в абстрактый Transform/Rigidbody
-	pos        V2.V2
-	speed      V2.V2
+	pos   V2.V2
+	speed V2.V2
+
 	angle      float32
 	anglespeed float32
 
 	//мощность маршевого движка от -1 до 1
 	thrust float32
 	//изменение величины аксель за единицу
-	thrustaxel float32
+	thrustAxel float32
 	//максимальная сила движка
 	maxThrustForce float32
 
@@ -45,16 +47,19 @@ type ShipGameObject struct {
 
 	//TODO: абстрагировать в UI
 	arrowTex *sdl.Texture
+
+	showFixed bool
 }
 
 func newShip(ps *ParticleSystem) *ShipGameObject {
 
 	res := ShipGameObject{
 		colRad:         DEFVAL.ShipSize,
-		thrustaxel:     DEFVAL.ShipThrustaxel,
+		thrustAxel:     DEFVAL.ShipThrustAxel,
 		maxThrustForce: DEFVAL.ShipMaxThrustForce,
 		angAxel:        DEFVAL.ShipAngAxel,
-		angle:          180,
+		showFixed:      DEFVAL.ShipShowFixed,
+		angle:          0,
 		ps:             ps,
 		animSlideTime:  10}
 
@@ -84,27 +89,28 @@ func (ship *ShipGameObject) Update(dt float32) {
 	CH := ship.scene.ControlHandler
 
 	var cAngAxel float32
-	if CH.Joystick == nil {
-		//Поворачиваем на угол инрции
 
-		if CH.GetKey(sdl.SCANCODE_A) {
-			cAngAxel += ship.angAxel
-		}
-		if CH.GetKey(sdl.SCANCODE_D) {
-			cAngAxel -= ship.angAxel
-		}
+	//	if CH.Joystick == nil {
+	//Поворачиваем на угол инрции
 
-		if CH.GetKey(sdl.SCANCODE_W) {
-			ship.thrust += ship.thrustaxel * dt
-		}
-		if CH.GetKey(sdl.SCANCODE_S) {
-			ship.thrust -= ship.thrustaxel * dt
-		}
+	if CH.GetKey(sdl.SCANCODE_A) {
+		cAngAxel += ship.angAxel
+	}
+	if CH.GetKey(sdl.SCANCODE_D) {
+		cAngAxel -= ship.angAxel
 	}
 
-	if CH.Joystick!=nil {
-		ship.thrust += ship.thrustaxel *CH.AxisY*dt
-		cAngAxel -= ship.angAxel*CH.AxisX
+	if CH.GetKey(sdl.SCANCODE_W) {
+		ship.thrust += ship.thrustAxel * dt
+	}
+	if CH.GetKey(sdl.SCANCODE_S) {
+		ship.thrust -= ship.thrustAxel * dt
+	}
+	//	}
+
+	if CH.Joystick != nil {
+		ship.thrust += ship.thrustAxel * CH.AxisY * dt
+		cAngAxel -= ship.angAxel * CH.AxisX
 	}
 
 	if ship.thrust > 1 {
@@ -127,13 +133,15 @@ func (ship *ShipGameObject) Update(dt float32) {
 	//Пренесли скорость в координату
 	ship.pos.DoAddMul(ship.speed, dt)
 
-	//Отдельный по сути блок анимации
+	//Отдельный по сути блок расчёта анимации
 	produceMainEng := (ship.thrust > 0)
 	if produceMainEng {
 		thrust := ship.thrust
-		ship.MainEngineProducer.pos = ship.pos.Add(V2.InDir(ship.angle).Mul(-1 * ship.colRad))
+		childPos := V2.V2{0, -1.4}.Mul(ship.colRad)
+		ship.MainEngineProducer.pos = childPos.ApplyOnTransform(ship.pos, ship.angle)
 		psspeed := 0.2 + thrust*3*ship.colRad
-		ship.MainEngineProducer.speed = V2.InDir(ship.angle).Mul(-psspeed).Add(ship.speed)
+		ship.MainEngineProducer.speed = V2.InDir(180+ship.angle).Mul(psspeed).Add(ship.speed)
+		log.Println(ship.angle, V2.InDir(180+ship.angle))
 		ship.MainEngineProducer.Intense = DEFVAL.MainEngineParticlesMaxIntense * thrust
 		ship.MainEngineProducer.color = sdl.Color{byte(100 + 155*thrust), byte(70 * thrust), 0, 255}
 
@@ -151,35 +159,37 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) {
 	//Показ Корабля
 	var camRect *sdl.Rect
 	var inCamera bool
-	showFixedSized := (DEFVAL.ShipFixedSize != 0)
+	showFixedSized := ship.showFixed && (DEFVAL.ShipFixedSize != 0)
 	if showFixedSized {
-		camRect, inCamera = ship.scene.CameraRectByCenterAndSize(ship.pos, DEFVAL.ShipFixedSize)
+		camRect, inCamera = ship.scene.CameraRectByCenterAndScreenSize(ship.pos, DEFVAL.ShipFixedSize)
 	} else {
-		halfsize := ship.colRad
-		rect := f32Rect{ship.pos.X - halfsize, ship.pos.Y - halfsize, 2 * halfsize, 2 * halfsize}
+		rect := newF32Sqr(ship.pos, ship.colRad)
 		camRect, inCamera = ship.scene.CameraTransformRect(rect)
 	}
 
 	if inCamera {
-		r.CopyEx(ship.tex, nil, camRect, float64(-ship.angle), nil, sdl.FLIP_VERTICAL)
+		r.CopyEx(ship.tex, nil, camRect, -float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_NONE)
 	}
 
 	//Показ анимации огня
+	//TODO: ЧИТАЕМЫЕ преобразования координат вложенных объектов
 	if inCamera && ship.animActive {
 		ind := int32(ship.animTime*1000/ship.animSlideTime) % ship.MainEngineFlameTex.totalcount
 		flameRect := ship.MainEngineFlameTex.getRect(ind)
+
 		var cameraRect *sdl.Rect
+		childPos := V2.V2{0, -1.4}
 		if showFixedSized {
-			flameCentre := V2.V2{0 * float32(DEFVAL.ShipFixedSize) / ship.scene.CameraScale,
-				-1.4 * float32(DEFVAL.ShipFixedSize) / ship.scene.CameraScale}.ApplyOnTransform(ship.pos, ship.angle)
-			cameraRect, _ = ship.scene.CameraRectByCenterAndSize(flameCentre, DEFVAL.ShipFixedSize)
+			flameCentre := childPos.Mul(float32(DEFVAL.ShipFixedSize)/ship.scene.CameraScale).ApplyOnTransform(ship.pos, ship.angle)
+			cameraRect, _ = ship.scene.CameraRectByCenterAndScreenSize(flameCentre, int32(float32(DEFVAL.ShipFixedSize)*0.75))
 		} else {
-			flameCentre := V2.V2{0.05 * ship.colRad, -1.4 * ship.colRad}.ApplyOnTransform(ship.pos, ship.angle)
+			//физическая координата центра пламени
+			flameCentre := childPos.Mul(ship.colRad).ApplyOnTransform(ship.pos, ship.angle)
 			flamesize := float32(0.75 * ship.colRad)
-			dRect := newF32Rect(flameCentre, flamesize)
+			dRect := newF32Sqr(flameCentre, flamesize)
 			cameraRect, _ = ship.scene.CameraTransformRect(dRect)
 		}
-		r.CopyEx(ship.MainEngineFlameTex.tex, flameRect, cameraRect, float64(-ship.angle), nil, sdl.FLIP_NONE)
+		r.CopyEx(ship.MainEngineFlameTex.tex, flameRect, cameraRect, -float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL)
 	}
 
 	//Отдельный блок показа UI

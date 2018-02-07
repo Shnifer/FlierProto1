@@ -2,12 +2,12 @@ package main
 
 import (
 	"bufio"
-	"log"
-	"net"
-	"strings"
 	MNT "github.com/Shnifer/flierproto1/mnt"
-	"strconv"
+	"log"
 	"math/rand"
+	"net"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -39,8 +39,8 @@ type Room struct {
 	members map[string]net.Conn
 }
 
-func newRoom() Room{
-	return Room{members:make(map[string]net.Conn)}
+func newRoom() Room {
+	return Room{members: make(map[string]net.Conn)}
 }
 
 //ГО СИНГЛ сидит на listener.Accept()
@@ -62,7 +62,7 @@ func ListenConn(conn net.Conn, inStrs chan inString, DeadConns chan net.Conn) {
 	log.Println("ListenConn #", id, "START for", conn)
 	scaner := bufio.NewScanner(conn)
 	for scaner.Scan() {
-		str:=scaner.Text()
+		str := scaner.Text()
 		inStrs <- inString{sender: conn, text: str}
 	}
 	DeadConns <- conn
@@ -72,27 +72,27 @@ func ListenConn(conn net.Conn, inStrs chan inString, DeadConns chan net.Conn) {
 //ЗАПУСКАЕТ ГОРУТИНУ 1 на СОЕДИНЕНИЕ
 //и возвращает канал, из которого принимает строки на отправку
 //при закрытии канала выключается
-func newSenderConn(conn net.Conn) chan string{
-	log.Println("sender for",conn,"STARTED")
-	c:=make(chan string,1)
+func newSenderConn(conn net.Conn) chan string {
+	log.Println("sender for", conn, "STARTED")
+	c := make(chan string, 1)
 
 	go func() {
 		writer := bufio.NewWriter(conn)
-		for msg:=range c{
-			_,err:=writer.WriteString(msg+"\n")
-			if err!=nil{
-				log.Println("SEND to",conn,"ERR:",err)
+		for msg := range c {
+			_, err := writer.WriteString(msg + "\n")
+			if err != nil {
+				log.Println("SEND to", conn, "ERR:", err)
 				continue
 			}
 			writer.Flush()
-			log.Println("sent", msg,"to",conn)
+			log.Println("sent", msg, "to", conn)
 		}
 	}()
-	c<-MNT.RES_LOGIN
+	c <- MNT.RES_LOGIN
 	return c
 }
 
-var	OutSender map[net.Conn]chan string
+var OutSender map[net.Conn]chan string
 
 const serverDataPath = "res/server/"
 
@@ -103,7 +103,7 @@ func main() {
 
 	rand.Seed(time.Now().Unix())
 
-	if DEFVAL.LoadGalaxyFile!="" {
+	if DEFVAL.LoadGalaxyFile != "" {
 		LoadGalaxyFromFile()
 	} else {
 		GenerateRandomGalaxy()
@@ -113,14 +113,14 @@ func main() {
 
 	NewConns := make(chan net.Conn, 1)
 	DeadConns := make(chan net.Conn, 1)
-//	Conns := make(map[net.Conn]bool)
+	//	Conns := make(map[net.Conn]bool)
 
 	inStrs := make(chan inString, 1)
 
 	Profiles := make(map[net.Conn]Profile)
 	Rooms := make(map[string]Room)
 
-	OutSender=make(map[net.Conn]chan string)
+	OutSender = make(map[net.Conn]chan string)
 
 	listener, err := net.Listen("tcp", DEFVAL.tcpPort)
 	if err != nil {
@@ -141,26 +141,26 @@ func main() {
 			//CLOSE & REMOVE FROM CONNS
 			conn.Close()
 			//delete(Conns, conn)
-			prof, ok:= Profiles[conn]
+			prof, ok := Profiles[conn]
 			if ok {
 				//CHECK OUT from ROOM
-				role:=prof.Role
-				room:=prof.Room
-				delete(Rooms[room].members,role)
-				if len(Rooms[room].members)==0 {
+				role := prof.Role
+				room := prof.Room
+				delete(Rooms[room].members, role)
+				if len(Rooms[room].members) == 0 {
 					//no empty rooms
-					delete(Rooms,room)
+					delete(Rooms, room)
 				}
 				//Закрываем канал рассылки и этим горутину
 				close(OutSender[conn])
 				delete(OutSender, conn)
 
-				log.Println("Profile deleted for mr.",role,"from",room)
+				log.Println("Profile deleted for mr.", role, "from", room)
 				delete(Profiles, conn)
 			}
 
 		case inMsg := <-inStrs:
-			log.Println("inStrs",inMsg,"come")
+			log.Println("inStrs", inMsg, "come")
 			sender := inMsg.sender
 			profile, ok := Profiles[sender]
 			//Ещё не зарегистрирован, т.е. это должна быть строка логина
@@ -189,8 +189,8 @@ func main() {
 
 				//CHECK IN
 				Profiles[inMsg.sender] = Profile{Room: params[0], Role: params[1]}
-				room, ok := Rooms[reqRoom];
-				if !ok{
+				room, ok := Rooms[reqRoom]
+				if !ok {
 					//Если новая комната - добаляем
 					room = newRoom()
 					Rooms[reqRoom] = room
@@ -198,26 +198,25 @@ func main() {
 				room.members[reqRole] = sender
 
 				//Запускаем отправщика
-				ch:=newSenderConn(sender)
+				ch := newSenderConn(sender)
 				OutSender[sender] = ch
 			} else {
 				//Сообщение от зарегистрированного разбираем
-				room:=profile.Room
-				role:=profile.Role
+				room := profile.Room
+				role := profile.Role
 
-				log.Println("in",room,"mr.",role,"says:",inMsg.text)
-
+				log.Println("in", room, "mr.", role, "says:", inMsg.text)
 
 				params := strings.SplitN(inMsg.text, " ", 2)
-				if len(params)<1 {
+				if len(params) < 1 {
 					continue
 				}
-				command:=params[0]
-				param:=""
-				if len(params)>1 {
+				command := params[0]
+				param := ""
+				if len(params) > 1 {
 					param = params[1]
 				}
-				log.Println("command ",command)
+				log.Println("command ", command)
 
 				HandleCommand(Rooms[room], role, command, param, OutSender[sender])
 			}
@@ -228,22 +227,22 @@ func main() {
 func HandleCommand(Room Room, role string, command, params string, out chan string) {
 	switch command {
 	case MNT.CMD_BROADCAST:
-		if len(params)<2 {
+		if len(params) < 2 {
 			break
 		}
-		for destRole,destConn:=range Room.members {
-			msg:=params
+		for destRole, destConn := range Room.members {
+			msg := params
 			//не шлём себе
-			if destRole!=role {
-				OutSender[destConn] <- MNT.IN_MSG+" "+msg
+			if destRole != role {
+				OutSender[destConn] <- MNT.IN_MSG + " " + msg
 			}
 		}
 	case MNT.CMD_CHECKROOM:
-		out <- MNT.RES_CHECKROOM+" "+strconv.Itoa(len(Room.members))
+		out <- MNT.RES_CHECKROOM + " " + strconv.Itoa(len(Room.members))
 
 	case MNT.CMD_GETGALAXY:
-		res:= MNT.UploadGalaxy()
-		for _,s:=range res {
+		res := MNT.UploadGalaxy()
+		for _, s := range res {
 			out <- s
 		}
 	default:

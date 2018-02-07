@@ -3,13 +3,13 @@ package main
 import "github.com/veandco/go-sdl2/sdl"
 
 type staticImage struct {
-	scene *Scene
+	scene   *Scene
 	texName string
-	Tex *sdl.Texture
+	Tex     *sdl.Texture
 }
 
-func newStaticImage(texName string) *staticImage{
-	return &staticImage{texName:texName}
+func newStaticImage(texName string) *staticImage {
+	return &staticImage{texName: texName}
 }
 
 func (si *staticImage) GetID() string {
@@ -29,6 +29,5 @@ func (si *staticImage) Update(dt float32) {
 func (si *staticImage) Draw(r *sdl.Renderer) {
 	//На весь экран
 	//TODO: определить порядок ФОн - объекты - Интерфейс
-	r.Copy(si.Tex,nil,nil )
+	r.Copy(si.Tex, nil, nil)
 }
-

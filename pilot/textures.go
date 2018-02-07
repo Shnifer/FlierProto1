@@ -2,49 +2,50 @@ package main
 
 import (
 	"github.com/veandco/go-sdl2/sdl"
+	"image"
+	"image/jpeg"
+	"image/png"
 	"log"
 	"os"
-	"image/png"
-	"image/jpeg"
 	"strings"
-	"image"
 )
 
 type animTexture struct {
 	tex *sdl.Texture
 	//Количество и размер частей
-	part_w,part_h int32
-	num_x, num_y int32
-	totalcount int32
+	part_w, part_h int32
+	num_x, num_y   int32
+	totalcount     int32
 }
 
-func newAnimTexture(tex *sdl.Texture, num_x, num_y int) *animTexture{
-	_,_,w,h,err := tex.Query()
-	if err!=nil{
+func newAnimTexture(tex *sdl.Texture, num_x, num_y int) *animTexture {
+	_, _, w, h, err := tex.Query()
+	if err != nil {
 		log.Panicln(err)
 	}
-	nx, ny :=int32(num_x), int32(num_y)
+	nx, ny := int32(num_x), int32(num_y)
 
 	return &animTexture{
-		tex: tex,
-		num_x: nx,
-		num_y: ny,
-		part_w: w/nx,
-		part_h: h/ny,
-		totalcount: nx*ny,
+		tex:        tex,
+		num_x:      nx,
+		num_y:      ny,
+		part_w:     w / nx,
+		part_h:     h / ny,
+		totalcount: nx * ny,
 	}
 }
 
-func(at *animTexture) getRect(i int32) *sdl.Rect {
+func (at *animTexture) getRect(i int32) *sdl.Rect {
 
-	if i<0 || i>=at.totalcount {
-		log.Panicln("animtexture.getRect Out of index!", i,"of total",at.totalcount)
+	if i < 0 || i >= at.totalcount {
+		log.Panicln("animtexture.getRect Out of index!", i, "of total", at.totalcount)
 	}
 
-	px:=i%at.num_x
-	py:=i/at.num_x
-	return &sdl.Rect{px*at.part_w, py*at.part_h, at.part_w, at.part_h}
+	px := i % at.num_x
+	py := i / at.num_x
+	return &sdl.Rect{px * at.part_w, py * at.part_h, at.part_w, at.part_h}
 }
+
 //
 //func setPixel(x, y int, c sdl.Color, pixels []byte) {
 //	if x < 0 || y < 0 || x >= winW || y >= winH {
@@ -59,22 +60,22 @@ func(at *animTexture) getRect(i int32) *sdl.Rect {
 //	}
 //}
 
-func pixelsToTexture(renderer *sdl.Renderer, pixels []byte, w, h int) (*sdl.Texture,error) {
+func pixelsToTexture(renderer *sdl.Renderer, pixels []byte, w, h int) (*sdl.Texture, error) {
 	tex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STREAMING, int32(w), int32(h))
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	tex.Update(nil, pixels, w*4)
 	if err := tex.SetBlendMode(sdl.BLENDMODE_BLEND); err != nil {
-		return nil,err
+		return nil, err
 	}
-	return tex,nil
+	return tex, nil
 }
 
-func loadFileToPixels (fn string) ([]byte, int, int, error) {
+func loadFileToPixels(fn string) ([]byte, int, int, error) {
 	f, err := os.Open(fn)
 	if err != nil {
-		return nil,0,0, err
+		return nil, 0, 0, err
 	}
 	defer f.Close()
 
@@ -83,13 +84,13 @@ func loadFileToPixels (fn string) ([]byte, int, int, error) {
 	case strings.HasSuffix(fn, ".png"):
 		img, err = png.Decode(f)
 		if err != nil {
-			return nil,0,0, err
+			return nil, 0, 0, err
 		}
 	case strings.HasSuffix(fn, ".jpg") ||
-		 strings.HasSuffix(fn, ".jpeg"):
+		strings.HasSuffix(fn, ".jpeg"):
 		img, err = jpeg.Decode(f)
 		if err != nil {
-			return nil,0,0, err
+			return nil, 0, 0, err
 		}
 
 	default:
@@ -111,5 +112,5 @@ func loadFileToPixels (fn string) ([]byte, int, int, error) {
 			bIndex += 4
 		}
 	}
-	return Pixels, w,h, nil
+	return Pixels, w, h, nil
 }

@@ -10,16 +10,15 @@ import (
 	"strconv"
 )
 
-
 //Диаметр галактики в абсолютных космических единицах
 
 func randomStar(num int) *MNT.Star {
 	GalaxyRadius := DEFVAL.GalaxyRadius
 	minRadius := DEFVAL.Gen_minRadius
 	maxRadius := DEFVAL.Gen_maxMass
-	 maxSpeed  := DEFVAL.Gen_maxSpeed
-	 maxMass  := DEFVAL.Gen_maxMass
-	 minMass  := DEFVAL.Gen_minMass
+	maxSpeed := DEFVAL.Gen_maxSpeed
+	maxMass := DEFVAL.Gen_maxMass
+	minMass := DEFVAL.Gen_minMass
 
 	sizeK := rand.Float32()
 
@@ -77,7 +76,7 @@ func LoadGalaxyFromFile() {
 		RadMassDev     float32
 		PeriodOrbitDev float32
 	}
-	exData := make([]fileData,2)
+	exData := make([]fileData, 2)
 	exBuf, err := json.Marshal(exData)
 	if err != nil {
 		log.Panicln(err)
@@ -101,8 +100,8 @@ func LoadGalaxyFromFile() {
 
 	parentsPos := make(map[string]V2.V2)
 
-	Load_K_orbSpeed:=DEFVAL.Load_K_OrbSpeed
-	Load_K_radius:=DEFVAL.Load_K_Radius
+	Load_K_orbSpeed := DEFVAL.Load_K_OrbSpeed
+	Load_K_radius := DEFVAL.Load_K_Radius
 	n := 0
 	for _, v := range ReadData {
 
@@ -118,15 +117,15 @@ func LoadGalaxyFromFile() {
 
 		for i := 0; i < v.Count; i++ {
 			id := v.ID
-			orbDist:=float32(0)
-			orbSpeed:=float32(0)
-			if v.Parent!="" {
+			orbDist := float32(0)
+			orbSpeed := float32(0)
+			if v.Parent != "" {
 				orbDist = v.Distance
 				orbSpeed = 360 / v.OrbitPeriod * Load_K_orbSpeed
 			}
 			radius := v.Diameter / 2 * Load_K_radius
 			mass := v.Mass
-			angle:=v.StartAng
+			angle := v.StartAng
 
 			if v.Count == 1 {
 				//Если объект одиночный то в фале всё написано
@@ -136,7 +135,7 @@ func LoadGalaxyFromFile() {
 				}
 			} else {
 				//Генерим случайного по отклонениям
-				id = id+"-"+strconv.Itoa(i)
+				id = id + "-" + strconv.Itoa(i)
 
 				//Если отклоняется дальше то крутиться медленнее
 				kPeriodOrbit := kDev(v.PeriodOrbitDev)
@@ -146,22 +145,22 @@ func LoadGalaxyFromFile() {
 				radius *= kRadMass
 				mass *= kRadMass
 
-				angle=rand.Float32()*360
+				angle = rand.Float32() * 360
 				pos = pp.AddMul(V2.InDir(angle), orbDist)
 			}
 
 			Star := MNT.Star{
 				ID:       id,
-				Pos:pos,
+				Pos:      pos,
 				Parent:   v.Parent,
 				OrbDist:  orbDist,
 				OrbSpeed: orbSpeed,
 				Angle:    angle,
 				ColRad:   radius,
 				Mass:     mass,
-				Color:	  v.Color,
+				Color:    v.Color,
 			}
-			log.Println("created star",Star)
+			log.Println("created star", Star)
 			MNT.GalaxyData[n] = &Star
 			n++
 		}
