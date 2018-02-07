@@ -12,12 +12,14 @@ type PilotScene struct {
 	*Scene
 	Ship          *ShipGameObject
 	gravityCalc3D bool
+	showgizmos bool
 }
 
 func NewPilotScene(r *sdl.Renderer, ch *controlHandler) *PilotScene {
 	return &PilotScene{
 		Scene:         NewScene(r, ch),
 		gravityCalc3D: DEFVAL.GravityCalc3D,
+		showgizmos: true,
 	}
 }
 
@@ -114,6 +116,15 @@ func (ps *PilotScene) Update(dt float32) {
 		ps.gravityCalc3D = true
 	}
 
+	if ps.ControlHandler.GetKey(sdl.SCANCODE_5) {
+		log.Println("disable 3D gravity")
+		ps.showgizmos= false
+	}
+	if ps.ControlHandler.GetKey(sdl.SCANCODE_6) {
+		log.Println("enable 3D gravity")
+		ps.showgizmos= true
+	}
+
 	//АПДЕЙТ СЦЕНЫ
 	s.Update(dt)
 
@@ -135,7 +146,7 @@ func (ps PilotScene) Draw() {
 
 	GizmoGravityForceK := DEFVAL.GizmoGravityForceK
 	//Отрисовка "Гизмосов" гравитации
-	if DEFVAL.ShowGizmoGravityRound || DEFVAL.ShowGizmoGravityForce {
+	if ps.showgizmos && (DEFVAL.ShowGizmoGravityRound || DEFVAL.ShowGizmoGravityForce) {
 		sumForce := V2.V2{}
 
 		for _, obj := range s.Objects {
