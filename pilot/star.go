@@ -25,8 +25,7 @@ func (star *StarGameObject) GetGravState() (pos V2.V2, Mass float32) {
 }
 
 func (s *StarGameObject) Update(dt float32) {
-	const ZrotSpeed = 20
-	s.visZrot += ZrotSpeed * dt
+	s.visZrot += DEFVAL.StarRotationSpeed * dt
 
 	if s.Parent == "" {
 		//независимый объект

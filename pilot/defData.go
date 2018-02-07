@@ -8,33 +8,34 @@ import (
 )
 
 type tDefVals struct {
-	ServerName                    string
-	tcpPort                       string
-	MIN_FRAME_MS                  uint32
-	FullScreen                    bool
-	WinW, WinH                    int32
-	RENDERER_ACCELERATED          bool
-	GravityConst                  float32
-	GravityDepthSqr               float32
-	gravityCalc3D                 bool
-	StartLocationName             string
-	StartLocationOffset           V2.V2
-	ShowGizmoGravityForce         bool
-	GizmoGravityForceK            float32
-	ShowGizmoGravityRound         bool
-	GizmoGravityRoundDotsInCirle  int
-	GizmoGravityRoundLevels       []float32
-	ShipSize                      float32
-	ShipFixedSize                 int32
-	ShipShowFixed                 bool
-	ShipThrustAxel                float32
-	ShipMaxThrustForce            float32
-	ShipAngAxel                   float32
-	MainEngineMaxParticles        int
+	ServerName                   string
+	tcpPort                      string
+	MIN_FRAME_MS                 uint32
+	FullScreen                   bool
+	WinW, WinH                   int32
+	RENDERER_ACCELERATED         bool
+	GravityConst                 float32
+	GravityDepthSqr              float32
+	GravityCalc3D                bool
+	StartLocationName            string
+	StartLocationOffset          V2.V2
+	ShowGizmoGravityForce        bool
+	GizmoGravityForceK           float32
+	ShowGizmoGravityRound        bool
+	GizmoGravityRoundDotsInCirle int
+	GizmoGravityRoundLevels      []float32
+	ShipSize                     float32
+	ShipFixedSize                int32
+	ShipShowFixed                bool
+	ShipThrustAxel               float32
+	ShipMaxThrustForce           float32
+	ShipAngAxel                  float32
+	MainEngineMaxParticles       int
 	MainEngineParticlesLifetime   float32
 	MainEngineParticlesRandStartK float32
 	MainEngineParticlesRandSpeedK float32
 	MainEngineParticlesMaxIntense float32
+	StarRotationSpeed		float32
 }
 
 var DEFVAL tDefVals
@@ -63,6 +64,7 @@ func setDefDef() {
 		MainEngineParticlesRandStartK: 0.2,
 		MainEngineParticlesRandSpeedK: 0.2,
 		MainEngineParticlesMaxIntense: 100,
+		StarRotationSpeed: 30,
 	}
 }
 

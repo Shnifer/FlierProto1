@@ -6,7 +6,6 @@ import (
 	"runtime"
 	"time"
 	"fmt"
-	MNT "github.com/Shnifer/flierproto1/mnt"
 )
 
 //Константы экрана

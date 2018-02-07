@@ -4,10 +4,11 @@
   "WinW":1024,
   "WinH":768,
   "RENDERER_ACCELERATED":true,
-  "GravityConst":0.003,
+  "GravityConst":0.01,
   "GravityDepthSqr":10,
+  "GravityCalc3D": true,
   "StartLocationName":"saturn",
-  "StartLocationOffset":{"X":200,"Y":0},
+  "StartLocationOffset":{"X":300,"Y":300},
   "ShowGizmoGravityForce":true,
   "GizmoGravityForceK":100,
   "ShowGizmoGravityRound":true,
@@ -23,4 +24,5 @@
   "MainEngineParticlesLifetime":3,
   "MainEngineParticlesRandStartK":0.2,
   "MainEngineParticlesRandSpeedK":0.4,
-  "MainEngineParticlesMaxIntense":100}
+  "MainEngineParticlesMaxIntense":100,
+  "StarRotationSpeed":10}
