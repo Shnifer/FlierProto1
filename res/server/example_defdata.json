@@ -1,1 +1,1 @@
-{"LoadGalaxyFile":"","GalaxyRadius":10000,"NumStars":100,"Gen_minRadius":20,"Gen_maxRadius":60,"Gen_maxSpeed":0,"Gen_maxMass":600,"Gen_minMass":100,"Load_K_Radius":1,"Load_K_OrbSpeed":1}
+{"LoadGalaxyFile":"","GalaxyRadius":10000,"NumStars":100,"Gen_minRadius":20,"Gen_maxRadius":60,"Gen_maxSpeed":0,"Gen_maxMass":600,"Gen_minMass":100,"Load_K_Radius":1,"Load_K_OrbSpeed":1,"Load_DefTexName":"planet.png"}

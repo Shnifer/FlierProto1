@@ -27,7 +27,6 @@ type controlTickerData struct {
 }
 
 func ListenAndShowFPS() (chan<- fpsData, <-chan controlTickerData) {
-	const overhead = 1.2
 	inData := make(chan fpsData)
 	tickerControl := make(chan controlTickerData, 1)
 
@@ -35,6 +34,8 @@ func ListenAndShowFPS() (chan<- fpsData, <-chan controlTickerData) {
 
 	go func() {
 		defer close(tickerControl)
+
+		overhead := DEFVAL.TickerBalancerOverhead
 		for fps := range inData {
 			log.Println(
 				"Frame/s:", fps.graph-lastGraph,
@@ -51,18 +52,22 @@ func ListenAndShowFPS() (chan<- fpsData, <-chan controlTickerData) {
 			if newGraphPeriod < float32(DEFVAL.MIN_FRAME_MS) {
 				newGraphPeriod = float32(DEFVAL.MIN_FRAME_MS)
 			}
+			if newGraphPeriod>float32(DEFVAL.MAX_FRAME_MS) {
+				newGraphPeriod=float32(DEFVAL.MAX_FRAME_MS)
+			}
 			if newGraphPeriod < 1 {
 				newGraphPeriod = 1
 			}
 			newPhysPeriod := fps.maxPhysT * overhead * 1000
-			if newGraphPeriod < float32(DEFVAL.MIN_PHYS_MS) {
-				newGraphPeriod = float32(DEFVAL.MIN_PHYS_MS)
+			if newPhysPeriod < float32(DEFVAL.MIN_PHYS_MS) {
+				newPhysPeriod = float32(DEFVAL.MIN_PHYS_MS)
+			}
+			if newPhysPeriod > float32(DEFVAL.MAX_PHYS_MS){
+				newPhysPeriod = float32(DEFVAL.MAX_PHYS_MS)
 			}
 			if newPhysPeriod < 1 {
 				newPhysPeriod = 1
 			}
-
-			log.Println(newGraphPeriod, newPhysPeriod)
 
 			tickerControl <- controlTickerData{
 				newGraphPeriodms: newGraphPeriod,
@@ -91,9 +96,6 @@ func main() {
 
 	fmt.Println("got", renderer, Joystick)
 
-	MIN_FRAME_MS := DEFVAL.MIN_FRAME_MS
-	MAX_PHYS_MS := DEFVAL.MIN_PHYS_MS
-
 	ControlHandler := newControlHandler(Joystick)
 
 	PilotScene := NewPilotScene(renderer, ControlHandler)
@@ -103,8 +105,8 @@ func main() {
 	fpsControl, tickerControl := ListenAndShowFPS()
 	defer close(fpsControl)
 
-	GraphTick := time.NewTicker(time.Duration(MIN_FRAME_MS) * time.Millisecond)
-	PhysTick := time.NewTicker(time.Duration(MAX_PHYS_MS) * time.Millisecond)
+	GraphTick := time.NewTicker(time.Duration(DEFVAL.MAX_FRAME_MS) * time.Millisecond)
+	PhysTick := time.NewTicker(time.Duration(DEFVAL.MAX_PHYS_MS) * time.Millisecond)
 	defer GraphTick.Stop()
 	defer PhysTick.Stop()
 
@@ -131,7 +133,7 @@ loop:
 			PhysTick.Stop()
 			GraphTick.Stop()
 			GraphTick = time.NewTicker(time.Duration(tc.newGraphPeriodms) * time.Millisecond)
-			PhysTick = time.NewTicker(time.Duration(tc.newPhysPeriodms) * time.Millisecond)
+			PhysTick = time.NewTicker(time.Duration(tc.newPhysPeriodms*1000) * time.Microsecond)
 
 		case <-PhysTick.C:
 			deltaTime := float32(time.Since(lastPhysFrame).Seconds())

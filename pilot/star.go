@@ -56,5 +56,5 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) {
 
 func (star *StarGameObject) Init(scene *Scene) {
 	star.scene = scene
-	star.tex = TCache.GetTexture("planet.png")
+	star.tex = TCache.GetTexture(star.TexName)
 }

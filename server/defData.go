@@ -17,6 +17,7 @@ type tDefVals struct {
 	Gen_minMass     float32
 	Load_K_Radius   float32
 	Load_K_OrbSpeed float32
+	Load_DefTexName string
 	tcpPort         string
 }
 
@@ -33,6 +34,7 @@ func setDefDef() {
 		Gen_minMass:     100,
 		Load_K_Radius:   1,
 		Load_K_OrbSpeed: 1,
+		Load_DefTexName: "planet.png",
 		tcpPort:         ":6666",
 	}
 }

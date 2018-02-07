@@ -75,6 +75,7 @@ func LoadGalaxyFromFile() {
 		//отклонения от базовых значений в процентах, если объектов много
 		RadMassDev     float32
 		PeriodOrbitDev float32
+		TexName string
 	}
 	exData := make([]fileData, 2)
 	exBuf, err := json.Marshal(exData)
@@ -113,6 +114,11 @@ func LoadGalaxyFromFile() {
 				log.Panicln("object", v.ID, "can't fing parent", v.Parent, "before him")
 			}
 			pp = p
+		}
+
+		texName := v.TexName
+		if texName == "" {
+			texName = DEFVAL.Load_DefTexName
 		}
 
 		for i := 0; i < v.Count; i++ {
@@ -159,6 +165,7 @@ func LoadGalaxyFromFile() {
 				ColRad:   radius,
 				Mass:     mass,
 				Color:    v.Color,
+				TexName:  texName,
 			}
 			log.Println("created star", Star)
 			MNT.GalaxyData[n] = &Star

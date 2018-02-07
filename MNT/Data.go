@@ -39,6 +39,7 @@ type Star struct {
 
 	//Некие ценные данные её изучения, имитируем цветом и текстом
 	Color      Color
+	TexName    string
 	ObservText string
 }
 
