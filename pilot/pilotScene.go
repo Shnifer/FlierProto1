@@ -151,7 +151,7 @@ func (ps PilotScene) Draw() {
 				force := GravityForce(attractor, ps.Ship.pos, ps.gravityCalc3D).Mul(GizmoGravityForceK)
 
 				s.R.SetDrawColor(0, 0, 255, 255)
-				s.R.DrawLine(winW/2, winH/2, winW/2+int32(force.X), winH/2-int32(force.Y))
+				s.R.DrawLine(winW/2, winH/2, winW/2+int32(force.Rotate(s.CameraAngle).X), winH/2-int32(force.Rotate(s.CameraAngle).Y))
 				sumForce = sumForce.Add(force)
 			}
 
@@ -191,7 +191,7 @@ func (ps PilotScene) Draw() {
 		if DEFVAL.ShowGizmoGravityForce {
 			//Гизмос наш суммарный вектор
 			s.R.SetDrawColor(0, 255, 0, 255)
-			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.X), winH/2-int32(sumForce.Y))
+			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
 		}
 	}
 }
