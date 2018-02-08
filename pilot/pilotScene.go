@@ -25,21 +25,21 @@ func NewPilotScene(r *sdl.Renderer, ch *controlHandler) *PilotScene {
 
 func (PilotScene *PilotScene) Init() {
 	BackGround := newStaticImage("background.jpg")
-	PilotScene.AddObject(SceneObject(BackGround))
+	PilotScene.AddObject(BackGround)
 
 	Particles := newParticleSystem(DEFVAL.MainEngineMaxParticles)
-	PilotScene.AddObject(SceneObject(Particles))
+	PilotScene.AddObject(Particles)
 
 	//DATA INIT
 	for _, starData := range MNT.GalaxyData {
 		StarGO := &StarGameObject{Star: starData}
-		PilotScene.AddObject(SceneObject(StarGO))
+		PilotScene.AddObject(StarGO)
 	}
 	log.Println("Stars on scene", len(MNT.GalaxyData))
 
 	Ship := newShip(Particles)
 	PilotScene.Ship = Ship
-	PilotScene.AddObject(SceneObject(Ship))
+	PilotScene.AddObject(Ship)
 
 	startLoc := PilotScene.GetObjByID(DEFVAL.StartLocationName)
 	if startLoc != nil {
@@ -50,7 +50,7 @@ func (PilotScene *PilotScene) Init() {
 	}
 
 	FrontCabin := newStaticImage("cabinBorder.png")
-	PilotScene.AddObject(SceneObject(FrontCabin))
+	PilotScene.AddObject(FrontCabin)
 
 	PilotScene.Scene.Init()
 }
@@ -148,7 +148,6 @@ func (ps PilotScene) Draw() {
 	//Отрисовка "Гизмосов" гравитации
 	if ps.showgizmos && (DEFVAL.ShowGizmoGravityRound || DEFVAL.ShowGizmoGravityForce) {
 		sumForce := V2.V2{}
-
 		for _, obj := range s.Objects {
 			attractor, ok := obj.(HugeMass)
 			if !ok {
@@ -200,8 +199,18 @@ func (ps PilotScene) Draw() {
 		}
 
 		if DEFVAL.ShowGizmoGravityForce {
-			//Гизмос наш суммарный вектор
-			s.R.SetDrawColor(0, 255, 0, 255)
+			//Гизмос суммарный вектор гравитации
+			s.R.SetDrawColor(0, 200, 0, 255)
+			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
+
+			//Вектор тяги
+			thrustForce:=V2.InDir(ps.Ship.angle).Mul(ps.Ship.thrust * ps.Ship.maxThrustForce)
+			s.R.SetDrawColor(200, 0, 0, 255)
+			s.R.DrawLine(winW/2, winH/2, winW/2+int32(thrustForce.Rotate(s.CameraAngle).X), winH/2-int32(thrustForce.Rotate(s.CameraAngle).Y))
+			sumForce = sumForce.Add(thrustForce)
+
+			//тяга + гравитация
+			s.R.SetDrawColor(200, 200, 200, 255)
 			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
 		}
 	}
