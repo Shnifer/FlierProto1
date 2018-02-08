@@ -6,6 +6,7 @@ import (
 	"log"
 	"runtime"
 	"time"
+	"github.com/Shnifer/flierproto1/fps"
 )
 
 //Константы экрана
@@ -15,68 +16,6 @@ var winH int32
 
 const ResourcePath = "res/"
 const ClientDataPath = ResourcePath + "pilot/"
-
-type fpsData struct {
-	graph, phys, io     int
-	maxDt               float32
-	maxGraphT, maxPhysT float32
-}
-
-type controlTickerData struct {
-	newGraphPeriodms, newPhysPeriodms float32
-}
-
-func ListenAndShowFPS() (chan<- fpsData, <-chan controlTickerData) {
-	inData := make(chan fpsData)
-	tickerControl := make(chan controlTickerData, 1)
-
-	lastGraph, lastPhys, lastIO := 0, 0, 0
-
-	go func() {
-		defer close(tickerControl)
-
-		overhead := DEFVAL.TickerBalancerOverhead
-		for fps := range inData {
-			log.Println(
-				"Frame/s:", fps.graph-lastGraph,
-				"Phys/s:", fps.phys-lastPhys,
-				"io/s:", fps.io-lastIO,
-				"max dt", fps.maxDt*1000, "ms",
-				"maxGraph:", fps.maxGraphT*1000, "ms",
-				"maxPhys:", fps.maxPhysT*1000, "ms")
-			lastGraph = fps.graph
-			lastPhys = fps.phys
-			lastIO = fps.io
-
-			newGraphPeriod := fps.maxGraphT * overhead * 1000
-			if newGraphPeriod < float32(DEFVAL.MIN_FRAME_MS) {
-				newGraphPeriod = float32(DEFVAL.MIN_FRAME_MS)
-			}
-			if newGraphPeriod>float32(DEFVAL.MAX_FRAME_MS) {
-				newGraphPeriod=float32(DEFVAL.MAX_FRAME_MS)
-			}
-			if newGraphPeriod < 1 {
-				newGraphPeriod = 1
-			}
-			newPhysPeriod := fps.maxPhysT * overhead * 1000
-			if newPhysPeriod < float32(DEFVAL.MIN_PHYS_MS) {
-				newPhysPeriod = float32(DEFVAL.MIN_PHYS_MS)
-			}
-			if newPhysPeriod > float32(DEFVAL.MAX_PHYS_MS){
-				newPhysPeriod = float32(DEFVAL.MAX_PHYS_MS)
-			}
-			if newPhysPeriod < 1 {
-				newPhysPeriod = 1
-			}
-
-			tickerControl <- controlTickerData{
-				newGraphPeriodms: newGraphPeriod,
-				newPhysPeriodms:  newPhysPeriod,
-			}
-		}
-	}()
-	return inData, tickerControl
-}
 
 type GameState byte
 
@@ -100,15 +39,18 @@ func main() {
 
 	PilotScene := NewPilotScene(renderer, ControlHandler)
 	PilotScene.Init()
-	//Проверочный показывать фпс, он же заглушка на систему каналов
-	ShowfpsTick := time.Tick(1000 * time.Millisecond)
-	fpsControl, tickerControl := ListenAndShowFPS()
-	defer close(fpsControl)
 
-	GraphTick := time.NewTicker(time.Duration(DEFVAL.MAX_FRAME_MS) * time.Millisecond)
-	PhysTick := time.NewTicker(time.Duration(DEFVAL.MAX_PHYS_MS) * time.Millisecond)
-	defer GraphTick.Stop()
-	defer PhysTick.Stop()
+	//Проверочный показывать фпс, он же заглушка на систему каналов
+	initFPS:=fps.InitStruct{
+		MIN_FRAME_MS:           DEFVAL.MIN_FRAME_MS,
+		MIN_PHYS_MS:            DEFVAL.MIN_PHYS_MS,
+		MAX_FRAME_MS:           DEFVAL.MAX_FRAME_MS,
+		MAX_PHYS_MS:           DEFVAL.MAX_PHYS_MS,
+		FPS_UPDATE_MS: DEFVAL.FPS_UPDATE_MS,
+		TickerBalancerOverhead: DEFVAL.TickerBalancerOverhead,
+	}
+	ShowFpsTick, fpsControl:=fps.Start(initFPS)
+	defer close(fpsControl)
 
 	lastPhysFrame := time.Now()
 
@@ -123,19 +65,13 @@ loop:
 		case <-breakMainLoop:
 			break loop
 		//Время показать фпс
-		case <-ShowfpsTick:
-			fpsControl <- fpsData{graphFrameN, physFrameN, ioFrameN,
+		case <-ShowFpsTick:
+			fpsControl <- fps.FpsData{graphFrameN, physFrameN, ioFrameN,
 				maxDt, maxGraphT, maxPhysT}
 			maxDt = 0.0
 			maxGraphT = 0.0
 			maxPhysT = 0.0
-		case tc := <-tickerControl:
-			PhysTick.Stop()
-			GraphTick.Stop()
-			GraphTick = time.NewTicker(time.Duration(tc.newGraphPeriodms) * time.Millisecond)
-			PhysTick = time.NewTicker(time.Duration(tc.newPhysPeriodms*1000) * time.Microsecond)
-
-		case <-PhysTick.C:
+		case <-fps.PTick:
 			deltaTime := float32(time.Since(lastPhysFrame).Seconds())
 			if deltaTime > maxDt {
 				maxDt = deltaTime
@@ -149,7 +85,7 @@ loop:
 			}
 		default:
 			select {
-			case <-GraphTick.C:
+			case <-fps.GTick:
 				graphFrameN++
 				start := time.Now()
 				renderer.Clear()
