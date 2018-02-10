@@ -1,11 +1,11 @@
 package main
 
 import (
-	MNT "github.com/Shnifer/flierproto1/mnt"
-	V2 "github.com/Shnifer/flierproto1/v2"
-	"github.com/veandco/go-sdl2/sdl"
+MNT "github.com/Shnifer/flierproto1/mnt"
+V2 "github.com/Shnifer/flierproto1/v2"
+"github.com/veandco/go-sdl2/sdl"
 
-	"log"
+"log"
 )
 
 type StarGameObject struct {
