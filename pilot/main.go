@@ -57,7 +57,7 @@ func main() {
 
 	breakMainLoop := make(chan bool, 1)
 
-	IOTick := time.Tick(20 * time.Millisecond)
+	IOTick := time.Tick(15 * time.Millisecond)
 
 loop:
 	for {

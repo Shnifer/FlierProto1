@@ -11,7 +11,7 @@ import (
 
 type PilotScene struct {
 	*Scene
-	Ship          *ShipGameObject
+	Ship          *PlayerShipGameObject
 	gravityCalc3D bool
 	showgizmos    bool
 }
@@ -26,10 +26,9 @@ func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 
 func (PilotScene *PilotScene) Init() {
 	BackGround := newStaticImage("background.jpg", Z_STAT_BACKGROUND)
-	FrontCabin := newStaticImage("cabinBorder.png",Z_STAT_HUD)
+	FrontCabin := newStaticImage("cabinBorder.png", Z_STAT_HUD)
 	PilotScene.AddObject(BackGround)
 	PilotScene.AddObject(FrontCabin)
-
 
 	Particles := newParticleSystem(DEFVAL.MainEngineMaxParticles)
 	PilotScene.AddObject(Particles)
@@ -41,7 +40,7 @@ func (PilotScene *PilotScene) Init() {
 	}
 	log.Println("Stars on scene", len(MNT.GalaxyData))
 
-	Ship := newShip(Particles)
+	Ship := NewPlayerShip(Particles)
 	PilotScene.Ship = Ship
 	PilotScene.AddObject(Ship)
 
@@ -85,13 +84,13 @@ func (ps *PilotScene) Update(dt float32) {
 	//ВНЕШНИЕ ПРЯМЫЕ ВОЗДЕЙСТВИЯ НИ КИНЕМАТИКУ КОРАБЛЯ
 	if ps.ControlHandler.GetKey(sdl.SCANCODE_SPACE) {
 		ps.Ship.speed = V2.V2{}
-		ps.Ship.anglespeed = 0
+		ps.Ship.angleSpeed = 0
 		ps.CameraAngle = 0
 	}
 
 	if ps.ControlHandler.GetKey(sdl.SCANCODE_KP_ENTER) {
 		ps.Ship.speed = V2.V2{}
-		ps.Ship.anglespeed = 0
+		ps.Ship.angleSpeed = 0
 		ps.CameraAngle = 0
 		startLoc := ps.GetObjByID(DEFVAL.StartLocationName)
 		if startLoc != nil {
@@ -196,7 +195,7 @@ func (ps PilotScene) Draw() {
 			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
 
 			//Вектор тяги
-			thrustForce := V2.InDir(ps.Ship.angle).Mul(ps.Ship.thrust * ps.Ship.maxThrustForce)
+			thrustForce := V2.InDir(ps.Ship.angle).Mul(ps.Ship.mainThrust * ps.Ship.maxThrustForce)
 			s.R.SetDrawColor(200, 0, 0, 255)
 			s.R.DrawLine(winW/2, winH/2, winW/2+int32(thrustForce.Rotate(s.CameraAngle).X), winH/2-int32(thrustForce.Rotate(s.CameraAngle).Y))
 			sumForce = sumForce.Add(thrustForce)
@@ -208,7 +207,7 @@ func (ps PilotScene) Draw() {
 	}
 
 	f := TCache.GetFont("interdim.ttf", 20)
-	t, w, h := TCache.CreateTextTex(s.R, "PILOT scene", f, sdl.Color{128, 128, 128, 50})
+	t, w, h := TCache.CreateTextTex(s.R, "PILOT scene", f, sdl.Color{200, 200, 200, 255})
 	rect := &sdl.Rect{100, 100, w, h}
 	s.R.Copy(t, nil, rect)
 }

@@ -35,6 +35,7 @@ type tDefVals struct {
 	ShipThrustAxel                float32
 	ShipMaxThrustForce            float32
 	ShipAngAxel                   float32
+	ShipMaxAngMomentum            float32
 	MainEngineMaxParticles        int
 	MainEngineParticlesLifetime   float32
 	MainEngineParticlesRandStartK float32
@@ -68,7 +69,8 @@ func setDefDef() {
 		ShipFixedSize:                 30,
 		ShipThrustAxel:                0.33,
 		ShipMaxThrustForce:            100,
-		ShipAngAxel:                   90,
+		ShipAngAxel:                   360,
+		ShipMaxAngMomentum:            90,
 		MainEngineMaxParticles:        1000,
 		MainEngineParticlesLifetime:   1,
 		MainEngineParticlesRandStartK: 0.2,

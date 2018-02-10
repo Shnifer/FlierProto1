@@ -70,7 +70,7 @@ func (ps *ParticleSystem) Update(dt float32) {
 	}
 }
 
-func (ps *ParticleSystem) Draw(r *sdl.Renderer) RenderReqList{
+func (ps *ParticleSystem) Draw(r *sdl.Renderer) RenderReqList {
 
 	var res RenderReqList
 	for _, v := range ps.particles {
@@ -79,9 +79,9 @@ func (ps *ParticleSystem) Draw(r *sdl.Renderer) RenderReqList{
 		}
 		r.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 		x, y := ps.scene.CameraTransformV2(v.pos)
-		t:=TCache.GetTexture("particle.png")
-		req:=NewRenderReqSimple(t,nil, &sdl.Rect{x-5,y-5,11,11}, Z_UNDER_OBJECT)
-		res=append(res, req)
+		t := TCache.GetTexture("particle.png")
+		req := NewRenderReqSimple(t, nil, &sdl.Rect{x - 5, y - 5, 11, 11}, Z_UNDER_OBJECT)
+		res = append(res, req)
 
 	}
 	return res

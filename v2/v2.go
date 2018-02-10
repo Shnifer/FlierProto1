@@ -56,6 +56,13 @@ func Rotate(V V2, angle float32) V2 {
 	}
 }
 
+func Rotate90(a V2) V2 {
+	return V2{
+		X: -a.Y,
+		Y: +a.X,
+	}
+}
+
 //переводит вектор в систему с началом кординат в pos и повернутую на angle
 func ApplyOnTransform(V, pos V2, angle float32) V2 {
 	return Add(pos, Rotate(V, angle))
@@ -129,6 +136,10 @@ func (a V2) Rotate(angle float32) V2 {
 	return Rotate(a, angle)
 }
 
+func (a V2) Rotate90() V2 {
+	return Rotate90(a)
+}
+
 func (v V2) ApplyOnTransform(pos V2, angle float32) V2 {
 	return ApplyOnTransform(v, pos, angle)
 }
@@ -139,4 +150,12 @@ func (a V2) AddMul(b V2, t float32) V2 {
 
 func (a *V2) DoAddMul(b V2, t float32) {
 	*a = AddMul(*a, b, t)
+}
+
+//перевод в экранные координаты с певоротом Y
+func (a V2) ScX() int32 {
+	return int32(a.X)
+}
+func (a V2) ScY() int32 {
+	return int32(-a.Y)
 }

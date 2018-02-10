@@ -6,11 +6,11 @@ type staticImage struct {
 	scene   *Scene
 	texName string
 	Tex     *sdl.Texture
-	ZLayer ZLayer
+	ZLayer  ZLayer
 }
 
 func newStaticImage(texName string, ZLayer ZLayer) *staticImage {
-	return &staticImage{texName: texName, ZLayer:ZLayer}
+	return &staticImage{texName: texName, ZLayer: ZLayer}
 }
 
 func (si *staticImage) GetID() string {
@@ -29,5 +29,5 @@ func (si *staticImage) Update(dt float32) {
 func (si *staticImage) Draw(r *sdl.Renderer) RenderReqList {
 	//На весь экран
 	//TODO: определить порядок ФОн - объекты - Интерфейс
-	return RenderReqList{NewRenderReqSimple(si.Tex,nil,nil,si.ZLayer)}
+	return RenderReqList{NewRenderReqSimple(si.Tex, nil, nil, si.ZLayer)}
 }

@@ -13,27 +13,25 @@ type ZLayer int
 const (
 	//Статический фон, обычно один и занимает весь экран
 	Z_STAT_BACKGROUND ZLayer = iota * 100
-
 	//Динамические изменения на фоне, например координатная сетка
 	Z_BACKGROUND
-
 	//Подложка под игровым объектом, например кружок выделения
 	Z_UNDER_OBJECT
-
 	//Сами игровые объекты
 	Z_GAME_OBJECT
-
 	//Сверху игровых объектов, надписи или гизмосы объектов
 	Z_ABOVE_OBJECT
-
 	//не привязанное к координатам игрового мира, например системы управления
 	Z_HUD
-
 	//обычно одна картинка с прозрачным центром отрисовывающая красивые края
 	Z_STAT_HUD
 )
 
-type RenderReq struct {
+type RenderReq interface {
+	GetZ() ZLayer
+}
+
+type RenderCopyReq struct {
 	tex       *sdl.Texture
 	src, dest *sdl.Rect
 	z         ZLayer
@@ -41,9 +39,22 @@ type RenderReq struct {
 	pivot     *sdl.Point
 	flip      sdl.RendererFlip
 }
+func (r RenderCopyReq) GetZ() ZLayer {
+	return r.z
+}
 
-func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64, pivot *sdl.Point, flip sdl.RendererFlip) RenderReq {
-	return RenderReq{tex: tex,
+type RenderDrawLinesReq struct {
+	color sdl.Color
+	points []sdl.Point
+	z ZLayer
+}
+func (r RenderDrawLinesReq) GetZ() ZLayer {
+	return r.z
+}
+
+func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64, pivot *sdl.Point, flip sdl.RendererFlip) RenderCopyReq {
+	return RenderCopyReq{
+		tex: tex,
 		src:   src,
 		dest:  dest,
 		z:     z,
@@ -53,8 +64,9 @@ func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64
 	}
 }
 
-func NewRenderReqSimple(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer) RenderReq {
-	return RenderReq{tex: tex,
+func NewRenderReqSimple(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer) RenderCopyReq {
+	return RenderCopyReq{
+		tex: tex,
 		src:   src,
 		dest:  dest,
 		z:     z,
@@ -63,6 +75,15 @@ func NewRenderReqSimple(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer) RenderR
 		flip:  sdl.FLIP_NONE,
 	}
 }
+
+func NewRenderDrawLinesReq(points []sdl.Point, color sdl.Color, z ZLayer) RenderDrawLinesReq{
+	return RenderDrawLinesReq{
+		points:points,
+		color:color,
+		z:z,
+		}
+}
+
 type RenderReqList []RenderReq
 
 func (r RenderReqList) Len() int {
@@ -73,7 +94,7 @@ func (r RenderReqList) Swap(i, j int) {
 }
 
 func (r RenderReqList) Less(i, j int) bool {
-	return r[i].z < r[j].z
+	return r[i].GetZ() < r[j].GetZ()
 }
 
 //Менеджер объектов, группирующий вызовы главного цикла
@@ -146,7 +167,14 @@ func (s Scene) Draw() {
 	sort.Stable(Reqs)
 
 	for _, v := range Reqs {
-		s.R.CopyEx(v.tex, v.src, v.dest, v.angle, v.pivot, v.flip)
+		switch req := v.(type) {
+		case RenderCopyReq:
+			s.R.CopyEx(req.tex, req.src, req.dest, req.angle, req.pivot, req.flip)
+		case RenderDrawLinesReq:
+			s.R.SetDrawColor(req.color.R, req.color.G, req.color.B, req.color.A)
+			s.R.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
+			s.R.DrawLines(req.points)
+		}
 	}
 }
 

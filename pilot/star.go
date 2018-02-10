@@ -1,11 +1,11 @@
 package main
 
 import (
-MNT "github.com/Shnifer/flierproto1/mnt"
-V2 "github.com/Shnifer/flierproto1/v2"
-"github.com/veandco/go-sdl2/sdl"
+	MNT "github.com/Shnifer/flierproto1/mnt"
+	V2 "github.com/Shnifer/flierproto1/v2"
+	"github.com/veandco/go-sdl2/sdl"
 
-"log"
+	"log"
 )
 
 type StarGameObject struct {
@@ -55,12 +55,12 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) RenderReqList {
 	var res RenderReqList
 	if inCamera {
 
-		req:=NewRenderReq(s.tex, nil, camRect, Z_GAME_OBJECT,float64(s.visZrot), nil, sdl.FLIP_NONE)
+		req := NewRenderReq(s.tex, nil, camRect, Z_GAME_OBJECT, float64(s.visZrot), nil, sdl.FLIP_NONE)
 		//UI
 		cx, cy := s.scene.CameraTransformV2(rect.center)
-		destRect:=&sdl.Rect{cx - s.UI_W/2, cy - s.UI_H/2, s.UI_W, s.UI_H}
-		reqUI:=NewRenderReqSimple(s.UItex, nil, destRect,Z_ABOVE_OBJECT)
-		res = append(res,req,reqUI)
+		destRect := &sdl.Rect{cx - s.UI_W/2, cy - s.UI_H/2, s.UI_W, s.UI_H}
+		reqUI := NewRenderReqSimple(s.UItex, nil, destRect, Z_ABOVE_OBJECT)
+		res = append(res, req, reqUI)
 	}
 	return res
 }
