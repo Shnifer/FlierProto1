@@ -75,7 +75,7 @@ func LoadGalaxyFromFile() {
 		//отклонения от базовых значений в процентах, если объектов много
 		RadMassDev     float32
 		PeriodOrbitDev float32
-		TexName string
+		TexName        string
 	}
 	exData := make([]fileData, 2)
 	exBuf, err := json.Marshal(exData)

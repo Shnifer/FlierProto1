@@ -107,9 +107,9 @@ func (ship *ShipGameObject) Update(dt float32) {
 	}
 	//	}
 
-	if CH.Joystick != nil {
-		ship.thrust += ship.thrustAxel * CH.AxisY * dt
-		cAngAxel -= ship.angAxel * CH.AxisX
+	if CH.HasJoystick() {
+		ship.thrust += ship.thrustAxel * CH.AxisY() * dt
+		cAngAxel -= ship.angAxel * CH.AxisX()
 	}
 
 	if ship.thrust > 1 {
@@ -153,10 +153,11 @@ func (ship *ShipGameObject) Update(dt float32) {
 	}
 }
 
-func (ship ShipGameObject) Draw(r *sdl.Renderer) {
+func (ship ShipGameObject) Draw(r *sdl.Renderer) RenderReqList{
 	//Показ Корабля
 	var camRect *sdl.Rect
 	var inCamera bool
+	var res RenderReqList
 	showFixedSized := ship.showFixed && (DEFVAL.ShipFixedSize != 0)
 	if showFixedSized {
 		camRect, inCamera = ship.scene.CameraRectByCenterAndScreenSize(ship.pos, DEFVAL.ShipFixedSize)
@@ -166,11 +167,12 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) {
 	}
 
 	if inCamera {
-		r.CopyEx(ship.tex, nil, camRect, -float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_NONE)
+		req:=NewRenderReq(ship.tex, nil, camRect, Z_GAME_OBJECT, -float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_NONE)
+		res = append(res,req)
 	}
 
 	//Показ анимации огня
-	//TODO: ЧИТАЕМЫЕ преобразования координат вложенных объектов
+	//TODO: вынести анимацию
 	if inCamera && ship.animActive {
 		ind := int32(ship.animTime*1000/ship.animSlideTime) % ship.MainEngineFlameTex.totalcount
 		flameRect := ship.MainEngineFlameTex.getRect(ind)
@@ -187,19 +189,16 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) {
 			dRect := newF32Sqr(flameCentre, flamesize)
 			cameraRect, _ = ship.scene.CameraTransformRect(dRect)
 		}
-		r.CopyEx(ship.MainEngineFlameTex.tex, flameRect, cameraRect, -float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL)
+		req:=NewRenderReq(ship.MainEngineFlameTex.tex, flameRect, cameraRect, Z_UNDER_OBJECT, -float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL)
+		res = append(res,req)
 	}
 
+	return res
 	//Отдельный блок показа UI
-	H := int32(ship.thrust * float32(winH) * 0.8)
-	UIRect := &sdl.Rect{X: 60,
-		Y: winH - 30 - H,
-		W: 40,
-		H: H}
-	ship.arrowTex.SetColorMod(255, 0, 0)
-	r.CopyEx(ship.arrowTex, nil, UIRect, 0, nil, sdl.FLIP_VERTICAL)
+	//к чёрту стрелочку, пили HUD
 }
 
+//TODO: когда-нибудь это тоже будет частью RigidBody
 //Часть "физического движка", запускается непосредственно перед update
 func (ship *ShipGameObject) ApplyForce(force V2.V2) {
 	ship.forceSum = ship.forceSum.Add(force)

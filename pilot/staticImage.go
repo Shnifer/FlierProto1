@@ -6,10 +6,11 @@ type staticImage struct {
 	scene   *Scene
 	texName string
 	Tex     *sdl.Texture
+	ZLayer ZLayer
 }
 
-func newStaticImage(texName string) *staticImage {
-	return &staticImage{texName: texName}
+func newStaticImage(texName string, ZLayer ZLayer) *staticImage {
+	return &staticImage{texName: texName, ZLayer:ZLayer}
 }
 
 func (si *staticImage) GetID() string {
@@ -18,7 +19,6 @@ func (si *staticImage) GetID() string {
 
 func (si *staticImage) Init(scene *Scene) {
 	si.scene = scene
-	//TODO: огут быть разные статичные картинки, а не только фон
 	si.Tex = TCache.GetTexture(si.texName)
 }
 
@@ -26,8 +26,8 @@ func (si *staticImage) Update(dt float32) {
 	//nothing
 }
 
-func (si *staticImage) Draw(r *sdl.Renderer) {
+func (si *staticImage) Draw(r *sdl.Renderer) RenderReqList {
 	//На весь экран
 	//TODO: определить порядок ФОн - объекты - Интерфейс
-	r.Copy(si.Tex, nil, nil)
+	return RenderReqList{NewRenderReqSimple(si.Tex,nil,nil,si.ZLayer)}
 }

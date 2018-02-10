@@ -70,25 +70,24 @@ func (ps *ParticleSystem) Update(dt float32) {
 	}
 }
 
-func (ps *ParticleSystem) Draw(r *sdl.Renderer) {
+func (ps *ParticleSystem) Draw(r *sdl.Renderer) RenderReqList{
 
+	var res RenderReqList
 	for _, v := range ps.particles {
 		if !v.active {
 			continue
 		}
 		r.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
-		r.SetDrawColor(v.color.R, v.color.G, v.color.B, uint8(255*v.restTime/v.lifeTime))
 		x, y := ps.scene.CameraTransformV2(v.pos)
-		points := make([]sdl.Point, 5*ps.maxCount+5)
-		points[0] = sdl.Point{x, y}
-		points[1] = sdl.Point{x + 1, y + 1}
-		points[2] = sdl.Point{x - 1, y + 1}
-		points[3] = sdl.Point{x + 1, y - 1}
-		points[4] = sdl.Point{x - 1, y - 1}
-		r.DrawPoints(points)
+		t:=TCache.GetTexture("particle.png")
+		req:=NewRenderReqSimple(t,nil, &sdl.Rect{x-5,y-5,11,11}, Z_UNDER_OBJECT)
+		res=append(res, req)
+
 	}
+	return res
 }
 
+//Используется из Update ругих объектов, чтобы врубить генератор на dt с заданными параметрами
 func (ps *ParticleSystem) Produce(dt float32, pStats *ProduceStats) {
 	pStats.intenseCounter += pStats.Intense * dt
 	numToProduce := int(pStats.intenseCounter)

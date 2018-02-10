@@ -15,6 +15,7 @@ type tDefVals struct {
 	MAX_FRAME_MS                  int
 	MAX_PHYS_MS                   int
 	TickerBalancerOverhead        float32
+	FPS_UPDATE_MS                 int
 	FullScreen                    bool
 	WinW, WinH                    int32
 	RENDERER_ACCELERATED          bool
@@ -52,6 +53,7 @@ func setDefDef() {
 		MIN_PHYS_MS:            3,
 		MAX_FRAME_MS:           30,
 		MAX_PHYS_MS:            10,
+		FPS_UPDATE_MS:          1000,
 		TickerBalancerOverhead: 2,
 		WinW:                          1024,
 		WinH:                          768,

@@ -13,7 +13,9 @@ type StarGameObject struct {
 	scene *Scene
 	tex   *sdl.Texture
 
-	visZrot float32
+	UItex      *sdl.Texture
+	UI_H, UI_W int32
+	visZrot    float32
 }
 
 func (star *StarGameObject) GetID() string {
@@ -43,18 +45,30 @@ func (s *StarGameObject) Update(dt float32) {
 	}
 }
 
-func (s *StarGameObject) Draw(r *sdl.Renderer) {
+func (s *StarGameObject) Draw(r *sdl.Renderer) RenderReqList {
 	s.tex.SetColorMod(s.Color.R, s.Color.G, s.Color.B)
 	halfsize := s.ColRad
 	rect := newF32Sqr(s.Pos, halfsize)
 	camRect, inCamera := s.scene.CameraTransformRect(rect)
 	//log.Println("draw star #",s.N,inCamera)
+
+	var res RenderReqList
 	if inCamera {
-		r.CopyEx(s.tex, nil, camRect, float64(s.visZrot), nil, sdl.FLIP_NONE)
+
+		req:=NewRenderReq(s.tex, nil, camRect, Z_GAME_OBJECT,float64(s.visZrot), nil, sdl.FLIP_NONE)
+		//UI
+		cx, cy := s.scene.CameraTransformV2(rect.center)
+		destRect:=&sdl.Rect{cx - s.UI_W/2, cy - s.UI_H/2, s.UI_W, s.UI_H}
+		reqUI:=NewRenderReqSimple(s.UItex, nil, destRect,Z_ABOVE_OBJECT)
+		res = append(res,req,reqUI)
 	}
+	return res
 }
 
 func (star *StarGameObject) Init(scene *Scene) {
 	star.scene = scene
 	star.tex = TCache.GetTexture(star.TexName)
+
+	f := TCache.GetFont("furore.otf", 9)
+	star.UItex, star.UI_W, star.UI_H = TCache.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 200, 200, 200})
 }

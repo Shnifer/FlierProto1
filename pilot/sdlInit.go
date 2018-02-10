@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	MNT "github.com/Shnifer/flierproto1/mnt"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/veandco/go-sdl2/ttf"
 	"log"
 	"math/rand"
 	"time"
@@ -12,6 +12,9 @@ import (
 //Инициализация SDL, загрузка файлов среды, установление сетевого соединения, загрузка галактики
 func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
 	rand.Seed(time.Now().Unix())
+
+	ttf.Init()
+
 	LoadDefVals(ClientDataPath)
 	log.Println("Connecting to Server...")
 	if err := MNT.ConnectClientToServer(DEFVAL.ServerName, DEFVAL.tcpPort); err != nil {
@@ -80,6 +83,5 @@ func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
 	MNT.LoginToServer(MNT.RoomName, MNT.ROLE_PILOT)
 	MNT.DownloadGalaxy()
 
-	fmt.Println("returned", renderer, Joystick)
 	return deferMe, renderer, Joystick
 }

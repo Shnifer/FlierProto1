@@ -114,3 +114,4 @@ func loadFileToPixels(fn string) ([]byte, int, int, error) {
 	}
 	return Pixels, w, h, nil
 }
+

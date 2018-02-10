@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/Shnifer/flierproto1/control"
 	MNT "github.com/Shnifer/flierproto1/mnt"
 	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
@@ -12,34 +13,37 @@ type PilotScene struct {
 	*Scene
 	Ship          *ShipGameObject
 	gravityCalc3D bool
-	showgizmos bool
+	showgizmos    bool
 }
 
-func NewPilotScene(r *sdl.Renderer, ch *controlHandler) *PilotScene {
+func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 	return &PilotScene{
 		Scene:         NewScene(r, ch),
 		gravityCalc3D: DEFVAL.GravityCalc3D,
-		showgizmos: true,
+		showgizmos:    true,
 	}
 }
 
 func (PilotScene *PilotScene) Init() {
-	BackGround := newStaticImage("background.jpg")
-	PilotScene.AddObject(SceneObject(BackGround))
+	BackGround := newStaticImage("background.jpg", Z_STAT_BACKGROUND)
+	FrontCabin := newStaticImage("cabinBorder.png",Z_STAT_HUD)
+	PilotScene.AddObject(BackGround)
+	PilotScene.AddObject(FrontCabin)
+
 
 	Particles := newParticleSystem(DEFVAL.MainEngineMaxParticles)
-	PilotScene.AddObject(SceneObject(Particles))
+	PilotScene.AddObject(Particles)
 
 	//DATA INIT
 	for _, starData := range MNT.GalaxyData {
 		StarGO := &StarGameObject{Star: starData}
-		PilotScene.AddObject(SceneObject(StarGO))
+		PilotScene.AddObject(StarGO)
 	}
 	log.Println("Stars on scene", len(MNT.GalaxyData))
 
 	Ship := newShip(Particles)
 	PilotScene.Ship = Ship
-	PilotScene.AddObject(SceneObject(Ship))
+	PilotScene.AddObject(Ship)
 
 	startLoc := PilotScene.GetObjByID(DEFVAL.StartLocationName)
 	if startLoc != nil {
@@ -48,9 +52,6 @@ func (PilotScene *PilotScene) Init() {
 	} else {
 		Ship.pos = DEFVAL.StartLocationOffset
 	}
-
-	FrontCabin := newStaticImage("cabinBorder.png")
-	PilotScene.AddObject(SceneObject(FrontCabin))
 
 	PilotScene.Scene.Init()
 }
@@ -101,28 +102,19 @@ func (ps *PilotScene) Update(dt float32) {
 		}
 	}
 
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_1) {
-		ps.Ship.showFixed = true
-	}
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_2) {
-		ps.Ship.showFixed = false
-	}
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_3) {
-		log.Println("disable 3D gravity")
-		ps.gravityCalc3D = false
-	}
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_4) {
-		log.Println("enable 3D gravity")
-		ps.gravityCalc3D = true
+	if ps.ControlHandler.WasKey(sdl.SCANCODE_1) {
+		ps.Ship.showFixed = !ps.Ship.showFixed
+		log.Printf("Fixed ship size mode = %v\n", ps.Ship.showFixed)
 	}
 
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_5) {
-		log.Println("disable 3D gravity")
-		ps.showgizmos= false
+	if ps.ControlHandler.WasKey(sdl.SCANCODE_2) {
+		ps.gravityCalc3D = !ps.gravityCalc3D
+		log.Printf("3D gravity mode = %v\n", ps.gravityCalc3D)
 	}
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_6) {
-		log.Println("enable 3D gravity")
-		ps.showgizmos= true
+
+	if ps.ControlHandler.WasKey(sdl.SCANCODE_3) {
+		ps.showgizmos = !ps.showgizmos
+		log.Printf("Show Gizmos = %v", ps.showgizmos)
 	}
 
 	//АПДЕЙТ СЦЕНЫ
@@ -148,7 +140,6 @@ func (ps PilotScene) Draw() {
 	//Отрисовка "Гизмосов" гравитации
 	if ps.showgizmos && (DEFVAL.ShowGizmoGravityRound || DEFVAL.ShowGizmoGravityForce) {
 		sumForce := V2.V2{}
-
 		for _, obj := range s.Objects {
 			attractor, ok := obj.(HugeMass)
 			if !ok {
@@ -200,9 +191,24 @@ func (ps PilotScene) Draw() {
 		}
 
 		if DEFVAL.ShowGizmoGravityForce {
-			//Гизмос наш суммарный вектор
-			s.R.SetDrawColor(0, 255, 0, 255)
+			//Гизмос суммарный вектор гравитации
+			s.R.SetDrawColor(0, 200, 0, 255)
+			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
+
+			//Вектор тяги
+			thrustForce := V2.InDir(ps.Ship.angle).Mul(ps.Ship.thrust * ps.Ship.maxThrustForce)
+			s.R.SetDrawColor(200, 0, 0, 255)
+			s.R.DrawLine(winW/2, winH/2, winW/2+int32(thrustForce.Rotate(s.CameraAngle).X), winH/2-int32(thrustForce.Rotate(s.CameraAngle).Y))
+			sumForce = sumForce.Add(thrustForce)
+
+			//тяга + гравитация
+			s.R.SetDrawColor(200, 200, 200, 255)
 			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
 		}
 	}
+
+	f := TCache.GetFont("interdim.ttf", 20)
+	t, w, h := TCache.CreateTextTex(s.R, "PILOT scene", f, sdl.Color{128, 128, 128, 50})
+	rect := &sdl.Rect{100, 100, w, h}
+	s.R.Copy(t, nil, rect)
 }
