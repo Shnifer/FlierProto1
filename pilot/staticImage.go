@@ -1,15 +1,18 @@
 package main
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"github.com/veandco/go-sdl2/sdl"
+	"github.com/Shnifer/flierproto1/scene"
+)
 
 type staticImage struct {
-	scene   *Scene
+	scene   *scene.Scene
 	texName string
 	Tex     *sdl.Texture
-	ZLayer  ZLayer
+	ZLayer  scene.ZLayer
 }
 
-func newStaticImage(texName string, ZLayer ZLayer) *staticImage {
+func newStaticImage(texName string, ZLayer scene.ZLayer) *staticImage {
 	return &staticImage{texName: texName, ZLayer: ZLayer}
 }
 
@@ -17,7 +20,7 @@ func (si *staticImage) GetID() string {
 	return ""
 }
 
-func (si *staticImage) Init(scene *Scene) {
+func (si *staticImage) Init(scene *scene.Scene) {
 	si.scene = scene
 	si.Tex = TCache.GetTexture(si.texName)
 }
@@ -26,8 +29,8 @@ func (si *staticImage) Update(dt float32) {
 	//nothing
 }
 
-func (si *staticImage) Draw(r *sdl.Renderer) RenderReqList {
+func (si *staticImage) Draw(r *sdl.Renderer) scene.RenderReqList {
 	//На весь экран
 	//TODO: определить порядок ФОн - объекты - Интерфейс
-	return RenderReqList{NewRenderReqSimple(si.Tex, nil, nil, si.ZLayer)}
+	return scene.RenderReqList{scene.NewRenderReqSimple(si.Tex, nil, nil, si.ZLayer)}
 }

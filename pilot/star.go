@@ -6,11 +6,12 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 
 	"log"
+	"github.com/Shnifer/flierproto1/scene"
 )
 
 type StarGameObject struct {
 	*MNT.Star
-	scene *Scene
+	scene *scene.Scene
 	tex   *sdl.Texture
 
 	UItex      *sdl.Texture
@@ -45,27 +46,26 @@ func (s *StarGameObject) Update(dt float32) {
 	}
 }
 
-func (s *StarGameObject) Draw(r *sdl.Renderer) RenderReqList {
+func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 	s.tex.SetColorMod(s.Color.R, s.Color.G, s.Color.B)
 	halfsize := s.ColRad
-	rect := newF32Sqr(s.Pos, halfsize)
+	rect := scene.NewF32Sqr(s.Pos, halfsize)
 	camRect, inCamera := s.scene.CameraTransformRect(rect)
 	//log.Println("draw star #",s.N,inCamera)
 
-	var res RenderReqList
 	if inCamera {
 
-		req := NewRenderReq(s.tex, nil, camRect, Z_GAME_OBJECT, float64(s.visZrot), nil, sdl.FLIP_NONE)
+		req := scene.NewRenderReq(s.tex, nil, camRect, scene.Z_GAME_OBJECT, float64(s.visZrot), nil, sdl.FLIP_NONE)
 		//UI
-		cx, cy := s.scene.CameraTransformV2(rect.center)
+		cx, cy := s.scene.CameraTransformV2(rect.Center)
 		destRect := &sdl.Rect{cx - s.UI_W/2, cy - s.UI_H/2, s.UI_W, s.UI_H}
-		reqUI := NewRenderReqSimple(s.UItex, nil, destRect, Z_ABOVE_OBJECT)
+		reqUI := scene.NewRenderReqSimple(s.UItex, nil, destRect, scene.Z_ABOVE_OBJECT)
 		res = append(res, req, reqUI)
 	}
 	return res
 }
 
-func (star *StarGameObject) Init(scene *Scene) {
+func (star *StarGameObject) Init(scene *scene.Scene) {
 	star.scene = scene
 	star.tex = TCache.GetTexture(star.TexName)
 

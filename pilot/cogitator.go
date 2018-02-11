@@ -5,6 +5,7 @@ import (
 	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 	"math"
+	"github.com/Shnifer/flierproto1/scene"
 )
 
 type PlayerInputs struct {
@@ -111,7 +112,7 @@ func angSub(a, b float32) float32 {
 	return angClamp(a-b+180) - 180
 }
 
-func (c *Cogitator) Draw(r *sdl.Renderer) (res RenderReqList) {
+func (c *Cogitator) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 	White := sdl.Color{255, 255, 255, 100}
 	Yellow := sdl.Color{255, 255, 0, 255}
@@ -121,7 +122,7 @@ func (c *Cogitator) Draw(r *sdl.Renderer) (res RenderReqList) {
 	CompassR := winH * 35 / 100
 
 	cirl1 := psCircle(center, CompassR, 32)
-	req1 := NewRenderDrawLinesReq(cirl1, White, Z_HUD)
+	req1 := scene.NewRenderDrawLinesReq(cirl1, White, scene.Z_HUD)
 
 	angColor := Yellow
 	d := angSub(c.wantedAngle, c.Stats.angle)
@@ -131,10 +132,10 @@ func (c *Cogitator) Draw(r *sdl.Renderer) (res RenderReqList) {
 	}
 
 	wantedAng := psTrigon(center, c.wantedAngle, CompassR+5, CompassR+25, 20)
-	req2 := NewRenderDrawLinesReq(wantedAng, angColor, Z_HUD)
+	req2 := scene.NewRenderDrawLinesReq(wantedAng, angColor, scene.Z_HUD)
 
 	currentAng := psTrigon(center, c.Stats.angle, CompassR-5, CompassR-25, 20)
-	req3 := NewRenderDrawLinesReq(currentAng, angColor, Z_HUD)
+	req3 := scene.NewRenderDrawLinesReq(currentAng, angColor, scene.Z_HUD)
 
 	thrColor := Yellow
 	const greenthrD = 0.03
@@ -145,11 +146,11 @@ func (c *Cogitator) Draw(r *sdl.Renderer) (res RenderReqList) {
 	const angwidthOfThrust = 30
 	w_ang:=90+angwidthOfThrust*(1-2*c.wantedMainThrust)
 	wantedThr := psTrigon(center, w_ang, CompassR+105, CompassR+125, 20)
-	req4 := NewRenderDrawLinesReq(wantedThr, thrColor, Z_HUD)
+	req4 := scene.NewRenderDrawLinesReq(wantedThr, thrColor, scene.Z_HUD)
 
 	c_ang:=90+angwidthOfThrust*(1-2*c.Stats.mainThrust)
 	currentThr := psTrigon(center, c_ang, CompassR+95, CompassR+75, 20)
-	req5 := NewRenderDrawLinesReq(currentThr, thrColor, Z_HUD)
+	req5 := scene.NewRenderDrawLinesReq(currentThr, thrColor, scene.Z_HUD)
 
 
 	res = append(res, req1, req2, req3,req4,req5)

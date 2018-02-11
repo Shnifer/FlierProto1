@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/Shnifer/flierproto1/scene"
 )
 
 type PlayerShipGameObject struct {
@@ -39,7 +40,7 @@ func (ship *PlayerShipGameObject) GetID() string {
 	return ""
 }
 
-func (ship *PlayerShipGameObject) Init(scene *Scene) {
+func (ship *PlayerShipGameObject) Init(scene *scene.Scene) {
 	ship.ShipGameObject.Init(scene)
 }
 
@@ -86,7 +87,7 @@ func (ship *PlayerShipGameObject) Update(dt float32) {
 
 }
 
-func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) RenderReqList {
+func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) scene.RenderReqList {
 	res := ship.ShipGameObject.Draw(r)
 
 	//Показ анимации пламени
@@ -106,10 +107,10 @@ func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) RenderReqList {
 				//физическая координата центра пламени
 				flameCentre := childPos.Mul(ship.colRad).ApplyOnTransform(ship.pos, ship.angle)
 				flamesize := float32(mainFlameSize * ship.colRad)
-				dRect := newF32Sqr(flameCentre, flamesize)
+				dRect := scene.NewF32Sqr(flameCentre, flamesize)
 				cameraRect, _ = ship.scene.CameraTransformRect(dRect)
 			}
-			req := NewRenderReq(flameTex, flameRect, cameraRect, Z_UNDER_OBJECT,
+			req := scene.NewRenderReq(flameTex, flameRect, cameraRect, scene.Z_UNDER_OBJECT,
 				-float64(ship.angle + ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL)
 			res = append(res, req)
 		}
@@ -129,10 +130,10 @@ func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) RenderReqList {
 				//физическая координата центра пламени
 				flameCentre := childPos.Mul(ship.colRad).ApplyOnTransform(ship.pos, ship.angle)
 				flamesize := float32(sideFlameSize * ship.colRad)
-				dRect := newF32Sqr(flameCentre, flamesize)
+				dRect := scene.NewF32Sqr(flameCentre, flamesize)
 				cameraRect, _ = ship.scene.CameraTransformRect(dRect)
 			}
-			req := NewRenderReq(flameTex, flameRect, cameraRect, Z_UNDER_OBJECT,
+			req := scene.NewRenderReq(flameTex, flameRect, cameraRect, scene.Z_UNDER_OBJECT,
 				-float64(ship.angle + ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL)
 			res = append(res, req)
 		}

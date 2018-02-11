@@ -3,6 +3,7 @@ package main
 import (
 	V2 "github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/Shnifer/flierproto1/scene"
 )
 
 type ShipGameObject struct {
@@ -22,7 +23,7 @@ type ShipGameObject struct {
 	//Радиус и коллизии и полупоперечник рисовки
 	colRad float32
 
-	scene *Scene
+	scene *scene.Scene
 	tex   *sdl.Texture
 	ps    *ParticleSystem
 
@@ -54,7 +55,7 @@ func (ship *ShipGameObject) GetID() string {
 	return ""
 }
 
-func (ship *ShipGameObject) Init(scene *Scene) {
+func (ship *ShipGameObject) Init(scene *scene.Scene) {
 	ship.scene = scene
 	ship.tex = TCache.GetTexture("ship.png")
 
@@ -81,21 +82,20 @@ func (ship *ShipGameObject) Update(dt float32) {
 	ship.pos.DoAddMul(ship.speed, dt)
 }
 
-func (ship ShipGameObject) Draw(r *sdl.Renderer) RenderReqList {
+func (ship ShipGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 	//Показ Корабля
 	var camRect *sdl.Rect
 	var inCamera bool
-	var res RenderReqList
 	showFixedSized := ship.showFixed && (DEFVAL.ShipFixedSize != 0)
 	if showFixedSized {
 		camRect, inCamera = ship.scene.CameraRectByCenterAndScreenSize(ship.pos, DEFVAL.ShipFixedSize)
 	} else {
-		rect := newF32Sqr(ship.pos, ship.colRad)
+		rect := scene.NewF32Sqr(ship.pos, ship.colRad)
 		camRect, inCamera = ship.scene.CameraTransformRect(rect)
 	}
 
 	if inCamera {
-		req := NewRenderReq(ship.tex, nil, camRect, Z_GAME_OBJECT,
+		req := scene.NewRenderReq(ship.tex, nil, camRect, scene.Z_GAME_OBJECT,
 			-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_NONE)
 		res = append(res, req)
 	}

@@ -7,10 +7,16 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"math"
+	"github.com/Shnifer/flierproto1/scene"
 )
 
+type HugeMass interface {
+	GetGravState() (pos V2.V2, Mass float32)
+}
+
+
 type PilotScene struct {
-	*Scene
+	*scene.Scene
 	Ship          *PlayerShipGameObject
 	gravityCalc3D bool
 	showgizmos    bool
@@ -18,15 +24,15 @@ type PilotScene struct {
 
 func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 	return &PilotScene{
-		Scene:         NewScene(r, ch),
+		Scene:         scene.NewScene(r, ch, winW,winH),
 		gravityCalc3D: DEFVAL.GravityCalc3D,
 		showgizmos:    true,
 	}
 }
 
 func (PilotScene *PilotScene) Init() {
-	BackGround := newStaticImage("background.jpg", Z_STAT_BACKGROUND)
-	FrontCabin := newStaticImage("cabinBorder.png", Z_STAT_HUD)
+	BackGround := newStaticImage("background.jpg", scene.Z_STAT_BACKGROUND)
+	FrontCabin := newStaticImage("cabinBorder.png", scene.Z_STAT_HUD)
 	PilotScene.AddObject(BackGround)
 	PilotScene.AddObject(FrontCabin)
 
@@ -171,7 +177,7 @@ func (ps PilotScene) Draw() {
 					//GizmoLevel = GravityConst*mass/RadSqr
 					GravRadSqr := DEFVAL.GravityConst * mass / GizmoGravLevels[level]
 					GravRad := float32(math.Sqrt(float64(GravRadSqr)))
-					rect := newF32Sqr(pos, GravRad)
+					rect := scene.NewF32Sqr(pos, GravRad)
 					_, inCamera := ps.CameraTransformRect(rect)
 					if !inCamera {
 						continue

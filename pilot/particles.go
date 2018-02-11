@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/Shnifer/flierproto1/scene"
 )
 
 type particle struct {
@@ -30,7 +31,7 @@ type ProduceStats struct {
 
 //Частицы могут часто создаваться, поэтому делаем постоянный срез, и управляем чеез поле active
 type ParticleSystem struct {
-	scene    *Scene
+	scene    *scene.Scene
 	maxCount int
 	curCount int
 
@@ -50,7 +51,7 @@ func (ps *ParticleSystem) GetID() string {
 	return ""
 }
 
-func (ps *ParticleSystem) Init(scene *Scene) {
+func (ps *ParticleSystem) Init(scene *scene.Scene) {
 	ps.scene = scene
 }
 
@@ -70,9 +71,8 @@ func (ps *ParticleSystem) Update(dt float32) {
 	}
 }
 
-func (ps *ParticleSystem) Draw(r *sdl.Renderer) RenderReqList {
+func (ps *ParticleSystem) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
-	var res RenderReqList
 	for _, v := range ps.particles {
 		if !v.active {
 			continue
@@ -80,7 +80,7 @@ func (ps *ParticleSystem) Draw(r *sdl.Renderer) RenderReqList {
 		r.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 		x, y := ps.scene.CameraTransformV2(v.pos)
 		t := TCache.GetTexture("particle.png")
-		req := NewRenderReqSimple(t, nil, &sdl.Rect{x - 5, y - 5, 11, 11}, Z_UNDER_OBJECT)
+		req := scene.NewRenderReqSimple(t, nil, &sdl.Rect{x - 5, y - 5, 11, 11}, scene.Z_UNDER_OBJECT)
 		res = append(res, req)
 
 	}
