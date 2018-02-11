@@ -5,7 +5,6 @@ import (
 	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 	"math"
-	"log"
 )
 
 type PlayerInputs struct {
@@ -32,6 +31,7 @@ type Cogitator struct {
 }
 
 const wantedAngleSpeed = 180
+const wantedThrustSpeed = 2
 
 func (c *Cogitator) Cogitate(dt float32) (CO CogitatorOutput) {
 	c.wantedAngle += c.Inputs.AxisX * wantedAngleSpeed * dt
@@ -41,15 +41,18 @@ func (c *Cogitator) Cogitate(dt float32) (CO CogitatorOutput) {
 	if abs(dAng)<0.1 {
 		dAng=0
 	}
-	aSpeed:=c.Stats.angleSpeed
 	CO.wantedAngThrust = dAng-c.Stats.angleSpeed/5
-	log.Println(dAng,aSpeed,CO.wantedAngThrust)
 
-	CO.wantedMainThrust = c.Inputs.AxisY
+	c.wantedMainThrust += c.Inputs.AxisY * wantedThrustSpeed * dt
+	if c.wantedMainThrust > 1{
+		c.wantedMainThrust=1
+	} else if c.wantedMainThrust <0{
+		c.wantedMainThrust=0
+	}
+	CO.wantedMainThrust = c.wantedMainThrust
 	if c.Inputs.But1 {
 		CO.wantedMainThrust = 1
 	}
-	c.wantedMainThrust = CO.wantedMainThrust
 	return CO
 }
 

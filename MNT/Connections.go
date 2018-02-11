@@ -37,7 +37,7 @@ func ConnListener(conn net.Conn, Ch chan string) {
 	scaner := bufio.NewScanner(conn)
 	for scaner.Scan() {
 		str := scaner.Text()
-		log.Println("scaned", str)
+		//		log.Println("scaned", str)
 		Ch <- str
 	}
 	if err := scaner.Err(); err != nil {
@@ -50,7 +50,7 @@ func ConnSender(conn net.Conn, Ch chan string) {
 	log.Println("Writer enabled on server connection")
 	writer := bufio.NewWriter(conn)
 	for msg := range Ch {
-		log.Println("sending", msg)
+		//		log.Println("sending", msg)
 		if _, err := writer.WriteString(msg + "\n"); err != nil {
 			log.Println("Writer CANT SEND to server!", err)
 			break
