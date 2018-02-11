@@ -33,6 +33,7 @@ type inString struct {
 type Profile struct {
 	Room string
 	Role string
+	rdyForChat bool
 }
 
 type Room struct {
@@ -85,7 +86,11 @@ func newSenderConn(conn net.Conn) chan string {
 				continue
 			}
 			writer.Flush()
-			log.Println("sent", msg, "to", conn)
+			showmsg := msg
+			if len(msg)>40 {
+				showmsg=msg[0:40]+"..."
+			}
+			log.Println("sent", showmsg, "to", conn)
 		}
 	}()
 	c <- MNT.RES_LOGIN
@@ -93,6 +98,7 @@ func newSenderConn(conn net.Conn) chan string {
 }
 
 var OutSender map[net.Conn]chan string
+var Profiles map[net.Conn]Profile
 
 const serverDataPath = "res/server/"
 
@@ -117,8 +123,8 @@ func main() {
 
 	inStrs := make(chan inString, 1)
 
-	Profiles := make(map[net.Conn]Profile)
 	Rooms := make(map[string]Room)
+	Profiles = make(map[net.Conn]Profile)
 
 	OutSender = make(map[net.Conn]chan string)
 
@@ -218,13 +224,14 @@ func main() {
 				}
 				log.Println("command ", command)
 
-				HandleCommand(Rooms[room], role, command, param, OutSender[sender])
+				HandleCommand(Rooms[room], sender, role, command, param, OutSender[sender])
 			}
 		}
 	}
 }
 
-func HandleCommand(Room Room, role string, command, params string, out chan string) {
+//Комната, соединение и роль отправителя уже разобраны. входящая Команда, параметры и канал ответа оправителю
+func HandleCommand(Room Room, sender net.Conn, role string, command, params string, out chan string) {
 	switch command {
 	case MNT.CMD_BROADCAST:
 		if len(params) < 2 {
@@ -234,7 +241,10 @@ func HandleCommand(Room Room, role string, command, params string, out chan stri
 			msg := params
 			//не шлём себе
 			if destRole != role {
-				OutSender[destConn] <- MNT.IN_MSG + " " + msg
+				//Не шлём тем, кто ещё в командном режиме и не готов слушать
+				if Profiles[destConn].rdyForChat {
+					OutSender[destConn] <- MNT.IN_MSG + " " + msg
+				}
 			}
 		}
 	case MNT.CMD_CHECKROOM:
@@ -245,6 +255,14 @@ func HandleCommand(Room Room, role string, command, params string, out chan stri
 		for _, s := range res {
 			out <- s
 		}
+	case MNT.CMD_READYFORCHAT:
+		newprof:=Profiles[sender]
+		newprof.rdyForChat = true
+		Profiles[sender] = newprof
+	case MNT.CMD_STOPCHAT:
+		newprof:=Profiles[sender]
+		newprof.rdyForChat = false
+		Profiles[sender] = newprof
 	default:
 		log.Println("UNKNOWN COMMAND")
 		out <- MNT.ERR_UNKNOWNCMD

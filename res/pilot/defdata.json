@@ -31,4 +31,7 @@
   "MainEngineParticlesRandStartK":0.2,
   "MainEngineParticlesRandSpeedK":0.4,
   "MainEngineParticlesMaxIntense":100,
-  "StarRotationSpeed":10}
+  "StarRotationSpeed":10,
+  "CameraMinScale":1,
+  "CameraMaxScale":10
+}

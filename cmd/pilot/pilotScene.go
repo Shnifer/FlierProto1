@@ -32,8 +32,8 @@ func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 }
 
 func (PilotScene *PilotScene) Init() {
-	BackGround := newStaticImage("background.jpg", scene.Z_STAT_BACKGROUND)
-	FrontCabin := newStaticImage("cabinBorder.png", scene.Z_STAT_HUD)
+	BackGround := scene.NewStaticImage("background.jpg", scene.Z_STAT_BACKGROUND)
+	FrontCabin := scene.NewStaticImage("cabinBorder.png", scene.Z_STAT_HUD)
 	PilotScene.AddObject(BackGround)
 	PilotScene.AddObject(FrontCabin)
 
@@ -42,7 +42,7 @@ func (PilotScene *PilotScene) Init() {
 
 	//DATA INIT
 	for _, starData := range MNT.GalaxyData {
-		StarGO := &StarGameObject{Star: starData}
+		StarGO := &StarGameObject{Star: starData, startAngle:starData.Angle}
 		PilotScene.AddObject(StarGO)
 	}
 	log.Println("Stars on scene", len(MNT.GalaxyData))
@@ -77,6 +77,26 @@ func GravityForce(attractor HugeMass, body V2.V2, Calc3D bool) V2.V2 {
 }
 
 func (ps *PilotScene) Update(dt float32) {
+	if ps.ControlHandler.GetKey(sdl.SCANCODE_KP_PLUS) {
+		ps.CameraScale *= (1 + dt)
+	}
+	if ps.ControlHandler.GetKey(sdl.SCANCODE_KP_MINUS) {
+		ps.CameraScale *= (1 - dt)
+	}
+	min := DEFVAL.CameraMaxScale
+	if min==0 {
+		min=100000
+	} else {
+		min=1/min
+	}
+	max := DEFVAL.CameraMinScale
+	if max==0 {
+		max=100000
+	} else {
+		max=1/max
+	}
+	Clamp(&ps.CameraScale, min,max)
+
 	//ФИЗИКА
 	s := ps.Scene
 	for _, obj := range s.Objects {

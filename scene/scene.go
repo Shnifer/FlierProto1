@@ -48,13 +48,6 @@ func (scene *Scene) Init() {
 //TODO: Возможно сделать UPDATE в горутинах, проверить на мутексы и отвутсствие вызовов SDL
 func (s *Scene) Update(dt float32) {
 
-	if s.ControlHandler.GetKey(sdl.SCANCODE_KP_PLUS) {
-		s.CameraScale *= (1 + dt)
-	}
-	if s.ControlHandler.GetKey(sdl.SCANCODE_KP_MINUS) {
-		s.CameraScale *= (1 - dt)
-	}
-
 	for i := range s.Objects {
 		s.Objects[i].Update(dt)
 	}

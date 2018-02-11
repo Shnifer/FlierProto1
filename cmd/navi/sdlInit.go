@@ -13,7 +13,7 @@ import (
 
 const TexturePath = ResourcePath + "textures/"
 const FontPath = ResourcePath + "fonts/"
-const ClientDataPath = ResourcePath + "pilot/"
+const ClientDataPath = ResourcePath + "navi/"
 
 //Инициализация SDL, загрузка файлов среды, установление сетевого соединения, загрузка галактики
 func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
@@ -47,7 +47,7 @@ func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
 		winW = DEFVAL.WinW
 	}
 
-	window, err := sdl.CreateWindow("PILOT", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, winW, winH, winmode)
+	window, err := sdl.CreateWindow("NAVIGATOR", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, winW, winH, winmode)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -86,9 +86,8 @@ func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
 	}
 
 	log.Println("login")
-	MNT.LoginToServer(MNT.RoomName, MNT.ROLE_PILOT)
+	MNT.LoginToServer(MNT.RoomName, MNT.ROLE_NAVIGATOR)
 	MNT.DownloadGalaxy()
 	MNT.ReadyForChat()
-
 	return deferMe, renderer, Joystick
 }

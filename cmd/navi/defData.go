@@ -3,7 +3,6 @@ package main
 
 import (
 	"encoding/json"
-	V2 "github.com/Shnifer/flierproto1/v2"
 	"io/ioutil"
 	"log"
 )
@@ -20,29 +19,9 @@ type tDefVals struct {
 	FullScreen                    bool
 	WinW, WinH                    int32
 	RENDERER_ACCELERATED          bool
-	GravityConst                  float32
-	GravityDepthSqr               float32
-	GravityCalc3D                 bool
-	StartLocationName             string
-	StartLocationOffset           V2.V2
-	ShowGizmoGravityForce         bool
-	GizmoGravityForceK            float32
-	ShowGizmoGravityRound         bool
-	GizmoGravityRoundDotsInCirle  int
-	GizmoGravityRoundLevels       []float32
-	ShipSize                      float32
-	ShipFixedSize                 int32
-	ShipShowFixed                 bool
-	ShipThrustAxel                float32
-	ShipMaxThrustForce            float32
-	ShipAngAxel                   float32
-	ShipMaxAngMomentum            float32
-	MainEngineMaxParticles        int
-	MainEngineParticlesLifetime   float32
-	MainEngineParticlesRandStartK float32
-	MainEngineParticlesRandSpeedK float32
-	MainEngineParticlesMaxIntense float32
 	StarRotationSpeed             float32
+	ShipSize					int32
+	CameraScrollSpeed			float32
 	//Обратное значение, не должно оказаться нулём!
 	CameraMinScale float32
 	CameraMaxScale float32
@@ -63,26 +42,10 @@ func setDefDef() {
 		WinW:                          1024,
 		WinH:                          768,
 		RENDERER_ACCELERATED:          true,
-		GravityConst:                  0.01,
-		GravityDepthSqr:               10,
-		StartLocationName:             "magelan",
-		ShowGizmoGravityForce:         false,
-		ShowGizmoGravityRound:         false,
-		GizmoGravityRoundDotsInCirle:  64,
-		ShipSize:                      1,
-		ShipFixedSize:                 30,
-		ShipThrustAxel:                0.33,
-		ShipMaxThrustForce:            100,
-		ShipAngAxel:                   360,
-		ShipMaxAngMomentum:            90,
-		MainEngineMaxParticles:        1000,
-		MainEngineParticlesLifetime:   1,
-		MainEngineParticlesRandStartK: 0.2,
-		MainEngineParticlesRandSpeedK: 0.2,
-		MainEngineParticlesMaxIntense: 100,
-		StarRotationSpeed:             30,
 		CameraMaxScale: 1000,
 		CameraMinScale: 1,
+		ShipSize: 30,
+		CameraScrollSpeed: 1,
 	}
 }
 

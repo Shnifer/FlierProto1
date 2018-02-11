@@ -7,7 +7,7 @@ import (
 )
 
 type FpsData struct {
-	Graph, Phys, Io     int
+	Graph, Phys, Io,Net int
 	MaxDt               float32
 	MaxGraphT, MaxPhysT float32
 }
@@ -63,7 +63,7 @@ func ResetTickersAndStartListen(GPeriodMs, PPeriodMs float32) {
 func ListenAndShowFPS() chan<- FpsData {
 	inData := make(chan FpsData)
 
-	lastGraph, lastPhys, lastIO := 0, 0, 0
+	lastGraph, lastPhys, lastIO, lastNet := 0, 0, 0,0
 
 	FPS_UPDATE_S := float32(params.FPS_UPDATE_MS) / 1000
 	go func() {
@@ -73,12 +73,14 @@ func ListenAndShowFPS() chan<- FpsData {
 				"Frame/s:", float32(fps.Graph-lastGraph)/FPS_UPDATE_S,
 				"Phys/s:", float32(fps.Phys-lastPhys)/FPS_UPDATE_S,
 				"io/s:", float32(fps.Io-lastIO)/FPS_UPDATE_S,
+				"net/s:", float32(fps.Net-lastNet)/FPS_UPDATE_S,
 				"max dt", fps.MaxDt*1000, "ms",
 				"maxGraph:", fps.MaxGraphT*1000, "ms",
 				"maxPhys:", fps.MaxPhysT*1000, "ms")
 			lastGraph = fps.Graph
 			lastPhys = fps.Phys
 			lastIO = fps.Io
+			lastNet = fps.Net
 
 			//Из секунд внешнего времени в миллисекунды (для совмест. с ини файлом)
 			newGraphPeriod := fps.MaxGraphT * overhead * 1000

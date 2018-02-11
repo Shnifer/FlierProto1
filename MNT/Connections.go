@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"time"
+	"strings"
 )
 
 //TODO: пока один корабль и защитое название
@@ -18,17 +19,30 @@ type ClientConn struct {
 }
 
 const resultTimeOut = time.Second
+const waitPause = 10*time.Millisecond
 
 //Посылает команду и возвращает строку из входного канала,
+//ожидаем ответ с командой pref
 //ожидая ответ считаем отсутствие его в течении таймаута - ошибкой
-func (C ClientConn) CommandResult(com string) (string, error) {
+func (C ClientConn) CommandResult(com string, pref string) (string, error) {
 	C.Send <- com
-	select {
-	case msg := <-C.Recv:
-		return msg, nil
-	case <-time.After(resultTimeOut):
-		return "", errors.New("TIMEOUT for command " + com)
+	for {
+		select {
+		case msg := <-C.Recv:
+			command,_:=SplitMsg(msg)
+			if command==pref{
+					return msg, nil
+				}
+			C.Recv<-msg
+			time.Sleep(waitPause)
+		case <-time.After(resultTimeOut):
+			return "", errors.New("TIMEOUT for command " + com)
+		}
 	}
+}
+
+func (C ClientConn) Broadcast(data string) {
+	C.Send <- CMD_BROADCAST+" "+data
 }
 
 func ConnListener(conn net.Conn, Ch chan string) {
@@ -85,7 +99,7 @@ func LoginToServer(room, role string) error {
 		return errors.New("No connection established!")
 	}
 
-	res, err := Client.CommandResult(room + " " + role)
+	res, err := Client.CommandResult(room + " " + role, RES_LOGIN)
 	if err != nil {
 		return err
 	}
@@ -120,4 +134,29 @@ func ConnectClientToServer(ServerName, TcpPort string) error {
 	log.Println("Connection ", conn)
 	Client = newClientConn(conn)
 	return nil
+}
+
+func SplitMsg(s string) (command, params string) {
+	parts:=strings.SplitN(s," ",2)
+	L:=len(parts)
+	if L>0 {
+		command = parts[0]
+		if L>1 {
+			params = parts[1]
+		}
+	}
+	return command,params
+}
+
+func ReadyForChat() {
+	log.Println("ReadyForChat()")
+	Client.Send<-CMD_READYFORCHAT
+}
+
+func SendBroadcast(cmd, param string) {
+	var ps string
+	if param!=""{
+		ps = " "+param
+	}
+	Client.Send<-CMD_BROADCAST+" "+cmd+ps
 }
