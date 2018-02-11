@@ -4,6 +4,7 @@ import (
 	V2 "github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/Shnifer/flierproto1/scene"
+	"github.com/Shnifer/flierproto1/texture"
 )
 
 type ShipGameObject struct {
@@ -57,7 +58,7 @@ func (ship *ShipGameObject) GetID() string {
 
 func (ship *ShipGameObject) Init(scene *scene.Scene) {
 	ship.scene = scene
-	ship.tex = TCache.GetTexture("ship.png")
+	ship.tex = texture.Cache.GetTexture("ship.png")
 
 	ship.anim = NewAnim("flame_ani.png", 5, 4, 10, false)
 }

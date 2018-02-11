@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/veandco/go-sdl2/sdl"
+	"github.com/Shnifer/flierproto1/texture"
 )
 
 type Anim struct {
@@ -9,12 +10,12 @@ type Anim struct {
 	time   float32
 	//время на показ кадра
 	SlideTime float32
-	Tex       *animTexture
+	Tex       *texture.AnimTex
 }
 
 func NewAnim(TexName string, num_x, num_y int, SlideTime float32, Active bool) *Anim {
-	statT := TCache.GetTexture(TexName)
-	AniT := newAnimTexture(statT, num_x, num_y)
+	statT := texture.Cache.GetTexture(TexName)
+	AniT := texture.NewAnimTex(statT, num_x, num_y)
 
 	return &Anim{
 		Tex:       AniT,
@@ -24,8 +25,8 @@ func NewAnim(TexName string, num_x, num_y int, SlideTime float32, Active bool) *
 }
 
 func (anim *Anim) GetTexAndRect() (*sdl.Texture, *sdl.Rect) {
-	ind := int32(anim.time*1000/anim.SlideTime) % anim.Tex.totalcount
-	return anim.Tex.tex, anim.Tex.getRect(ind)
+	ind := int32(anim.time*1000/anim.SlideTime) % anim.Tex.TotalCount()
+	return anim.Tex.GetTexAndRect(ind)
 }
 
 //TODO: Если выделять в пакет то функции запуска, остановки, тика на dt

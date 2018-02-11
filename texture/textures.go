@@ -1,4 +1,4 @@
-package main
+package texture
 
 import (
 	"github.com/veandco/go-sdl2/sdl"
@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-type animTexture struct {
+type AnimTex struct {
 	tex *sdl.Texture
 	//Количество и размер частей
 	part_w, part_h int32
@@ -18,14 +18,22 @@ type animTexture struct {
 	totalcount     int32
 }
 
-func newAnimTexture(tex *sdl.Texture, num_x, num_y int) *animTexture {
+func (a *AnimTex) TotalCount() int32{
+	return a.totalcount
+}
+
+func (a *AnimTex) GetTexAndRect(i int32) (*sdl.Texture, *sdl.Rect)  {
+	return a.tex, a.getRect(i)
+}
+
+func NewAnimTex(tex *sdl.Texture, num_x, num_y int) *AnimTex {
 	_, _, w, h, err := tex.Query()
 	if err != nil {
 		log.Panicln(err)
 	}
 	nx, ny := int32(num_x), int32(num_y)
 
-	return &animTexture{
+	return &AnimTex{
 		tex:        tex,
 		num_x:      nx,
 		num_y:      ny,
@@ -35,7 +43,7 @@ func newAnimTexture(tex *sdl.Texture, num_x, num_y int) *animTexture {
 	}
 }
 
-func (at *animTexture) getRect(i int32) *sdl.Rect {
+func (at *AnimTex) getRect(i int32) *sdl.Rect {
 
 	if i < 0 || i >= at.totalcount {
 		log.Panicln("animtexture.getRect Out of index!", i, "of total", at.totalcount)

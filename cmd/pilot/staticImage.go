@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/Shnifer/flierproto1/scene"
+	"github.com/Shnifer/flierproto1/texture"
 )
 
 type staticImage struct {
@@ -22,7 +23,7 @@ func (si *staticImage) GetID() string {
 
 func (si *staticImage) Init(scene *scene.Scene) {
 	si.scene = scene
-	si.Tex = TCache.GetTexture(si.texName)
+	si.Tex = texture.Cache.GetTexture(si.texName)
 }
 
 func (si *staticImage) Update(dt float32) {

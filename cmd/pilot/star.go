@@ -7,6 +7,7 @@ import (
 
 	"log"
 	"github.com/Shnifer/flierproto1/scene"
+	"github.com/Shnifer/flierproto1/texture"
 )
 
 type StarGameObject struct {
@@ -67,8 +68,8 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 func (star *StarGameObject) Init(scene *scene.Scene) {
 	star.scene = scene
-	star.tex = TCache.GetTexture(star.TexName)
+	star.tex = texture.Cache.GetTexture(star.TexName)
 
-	f := TCache.GetFont("furore.otf", 9)
-	star.UItex, star.UI_W, star.UI_H = TCache.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 200, 200, 200})
+	f := texture.Cache.GetFont("furore.otf", 9)
+	star.UItex, star.UI_W, star.UI_H = texture.Cache.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 200, 200, 200})
 }

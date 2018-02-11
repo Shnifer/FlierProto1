@@ -1,4 +1,4 @@
-package main
+package texture
 
 import (
 	"github.com/veandco/go-sdl2/sdl"
@@ -6,8 +6,6 @@ import (
 	"log"
 	"sync"
 )
-
-const TexturePath = "textures/"
 
 type fontType struct {
 	name string
@@ -19,26 +17,32 @@ type TexCache struct {
 	r        *sdl.Renderer
 	textures map[string]*sdl.Texture
 	fonts    map[fontType]*ttf.Font
+	texfilepath	string
+	fontfilepath string
 }
 
-func newTexCache(r *sdl.Renderer) TexCache {
+//Создаётся из вне после инициализации рендерера
+func NewTexCache(r *sdl.Renderer, texfilepath,fontfilepath string) TexCache {
+
 	return TexCache{
 		r:        r,
 		textures: make(map[string]*sdl.Texture),
 		fonts:    make(map[fontType]*ttf.Font),
+		texfilepath: texfilepath,
+		fontfilepath: fontfilepath,
 	}
 }
 
-var TCache TexCache
+var Cache TexCache
 
 //Загружает текстуру из файла в хранилище, если её там ещё нет
 //TODO: Асинхронная загрузка из файла в пиксели и передача в главный тред на компоновку в текстуру
-func (tc *TexCache) preloadTextureNoSync(name string) {
+func (tc *TexCache) PreloadTextureNoSync(name string) {
 	if _, ok := tc.textures[name]; ok {
 		//уже есть с таким именем
 		return
 	}
-	pixels, w, h, err := loadFileToPixels(ResourcePath + TexturePath + name)
+	pixels, w, h, err := loadFileToPixels(tc.texfilepath+name)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -52,7 +56,7 @@ func (tc *TexCache) preloadTextureNoSync(name string) {
 
 func (tc *TexCache) PreloadTexture(name string) {
 	tc.mu.Lock()
-	tc.preloadTextureNoSync(name)
+	tc.PreloadTextureNoSync(name)
 	tc.mu.Unlock()
 }
 
@@ -64,7 +68,7 @@ func (tc *TexCache) GetTexture(name string) *sdl.Texture {
 		return tex
 	}
 
-	tc.preloadTextureNoSync(name)
+	tc.PreloadTextureNoSync(name)
 	return tc.textures[name]
 }
 
@@ -77,7 +81,7 @@ func (tc *TexCache) GetFont(name string, size int) *ttf.Font {
 		return font
 	}
 
-	font, err := ttf.OpenFont(ResourcePath+name, size)
+	font, err := ttf.OpenFont(tc.fontfilepath+name, size)
 	if err != nil {
 		log.Panicln(err)
 	}

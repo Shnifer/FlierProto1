@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"github.com/Shnifer/flierproto1/scene"
+	"github.com/Shnifer/flierproto1/texture"
 )
 
 type HugeMass interface {
@@ -212,8 +213,8 @@ func (ps PilotScene) Draw() {
 		}
 	}
 
-	f := TCache.GetFont("interdim.ttf", 20)
-	t, w, h := TCache.CreateTextTex(s.R, "PILOT scene", f, sdl.Color{200, 200, 200, 255})
+	f := texture.Cache.GetFont("interdim.ttf", 20)
+	t, w, h := texture.Cache.CreateTextTex(s.R, "PILOT scene", f, sdl.Color{200, 200, 200, 255})
 	rect := &sdl.Rect{100, 100, w, h}
 	s.R.Copy(t, nil, rect)
 }

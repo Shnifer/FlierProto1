@@ -7,7 +7,11 @@ import (
 	"log"
 	"math/rand"
 	"time"
+	"github.com/Shnifer/flierproto1/texture"
 )
+
+const TexturePath = ResourcePath + "textures/"
+const FontPath = ResourcePath + "fonts/"
 
 //Инициализация SDL, загрузка файлов среды, установление сетевого соединения, загрузка галактики
 func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
@@ -60,7 +64,7 @@ func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
 	sdl.SetHint(sdl.HINT_RENDER_SCALE_QUALITY, "1")
 
 	//Создаём кэш текстур В ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ
-	TCache = newTexCache(renderer)
+	texture.Cache = texture.NewTexCache(renderer, TexturePath, FontPath)
 
 	//Joystick 0 initialize
 	var Joystick *sdl.Joystick

@@ -4,6 +4,7 @@ import (
 	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/Shnifer/flierproto1/scene"
+	"github.com/Shnifer/flierproto1/texture"
 )
 
 type particle struct {
@@ -79,7 +80,7 @@ func (ps *ParticleSystem) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 		}
 		r.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 		x, y := ps.scene.CameraTransformV2(v.pos)
-		t := TCache.GetTexture("particle.png")
+		t := texture.Cache.GetTexture("particle.png")
 		req := scene.NewRenderReqSimple(t, nil, &sdl.Rect{x - 5, y - 5, 11, 11}, scene.Z_UNDER_OBJECT)
 		res = append(res, req)
 
