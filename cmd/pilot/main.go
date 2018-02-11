@@ -1,14 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Shnifer/flierproto1/control"
 	"github.com/Shnifer/flierproto1/fps"
+	MNT "github.com/Shnifer/flierproto1/mnt"
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"runtime"
 	"time"
-	MNT "github.com/Shnifer/flierproto1/mnt"
-	"fmt"
 )
 
 //Константы экрана
@@ -26,11 +26,6 @@ const (
 	state_PilotSpace
 	state_NaviSpace
 )
-
-//Пока время синхронизации храним для звёзд в глобальной переменной
-//PILOT отсчитывает и передаёт, NAVI и CARGO принимают
-var GlobalNetSessionTime float32
-
 
 func main() {
 
@@ -64,11 +59,9 @@ func main() {
 	breakMainLoop := make(chan bool, 1)
 
 	IOTick := time.Tick(15 * time.Millisecond)
-	NetTick := time.Tick(50*time.Millisecond)
+	NetTick := time.Tick(50 * time.Millisecond)
 
-	GlobalNetSessionTime = 0
-
-loop:
+	loop:
 	for {
 		select {
 		//команда на выход
@@ -91,7 +84,7 @@ loop:
 			lastPhysFrame = time.Now()
 			physFrameN++
 
-			GlobalNetSessionTime +=deltaTime
+			PilotScene.NetSyncTime += deltaTime
 
 			ControlHandler.BeforeUpdate()
 			PilotScene.Update(deltaTime)
@@ -148,22 +141,21 @@ func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler) {
 }
 
 func DoMainLoopNet(scene *PilotScene) {
-	shipData:=MNT.ShipPosData{
-		Pos: scene.Ship.pos,
-		Speed: scene.Ship.speed,
-		Angle: scene.Ship.angle,
+	shipData := MNT.ShipPosData{
+		Pos:        scene.Ship.pos,
+		Speed:      scene.Ship.speed,
+		Angle:      scene.Ship.angle,
 		AngleSpeed: scene.Ship.angleSpeed,
 	}
-	params:=MNT.EncodeShipPos(shipData)
+	params := MNT.EncodeShipPos(shipData)
 	MNT.SendBroadcast(MNT.SHIP_POS, params)
-	MNT.SendBroadcast(MNT.SESSION_TIME, fmt.Sprintf("%f", GlobalNetSessionTime))
+	MNT.SendBroadcast(MNT.SESSION_TIME, fmt.Sprintf("%f", scene.NetSyncTime))
 }
-
 
 func timeCheck(caption string) func() {
 	Start := time.Now()
 	return func() {
-		t:=time.Now()
+		t := time.Now()
 		log.Println(caption, t.Sub(Start).Seconds()*1000000, "micro s")
 	}
 }

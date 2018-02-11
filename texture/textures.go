@@ -18,11 +18,11 @@ type AnimTex struct {
 	totalcount     int32
 }
 
-func (a *AnimTex) TotalCount() int32{
+func (a *AnimTex) TotalCount() int32 {
 	return a.totalcount
 }
 
-func (a *AnimTex) GetTexAndRect(i int32) (*sdl.Texture, *sdl.Rect)  {
+func (a *AnimTex) GetTexAndRect(i int32) (*sdl.Texture, *sdl.Rect) {
 	return a.tex, a.getRect(i)
 }
 

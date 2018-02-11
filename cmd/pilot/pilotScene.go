@@ -3,18 +3,17 @@ package main
 import (
 	"github.com/Shnifer/flierproto1/control"
 	MNT "github.com/Shnifer/flierproto1/mnt"
+	"github.com/Shnifer/flierproto1/scene"
+	"github.com/Shnifer/flierproto1/texture"
 	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"math"
-	"github.com/Shnifer/flierproto1/scene"
-	"github.com/Shnifer/flierproto1/texture"
 )
 
 type HugeMass interface {
 	GetGravState() (pos V2.V2, Mass float32)
 }
-
 
 type PilotScene struct {
 	*scene.Scene
@@ -25,7 +24,7 @@ type PilotScene struct {
 
 func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 	return &PilotScene{
-		Scene:         scene.NewScene(r, ch, winW,winH),
+		Scene:         scene.NewScene(r, ch, winW, winH),
 		gravityCalc3D: DEFVAL.GravityCalc3D,
 		showgizmos:    true,
 	}
@@ -42,7 +41,7 @@ func (PilotScene *PilotScene) Init() {
 
 	//DATA INIT
 	for _, starData := range MNT.GalaxyData {
-		StarGO := &StarGameObject{Star: starData, startAngle:starData.Angle}
+		StarGO := &StarGameObject{Star: starData, startAngle: starData.Angle}
 		PilotScene.AddObject(StarGO)
 	}
 	log.Println("Stars on scene", len(MNT.GalaxyData))
@@ -84,18 +83,18 @@ func (ps *PilotScene) Update(dt float32) {
 		ps.CameraScale *= (1 - dt)
 	}
 	min := DEFVAL.CameraMaxScale
-	if min==0 {
-		min=100000
+	if min == 0 {
+		min = 100000
 	} else {
-		min=1/min
+		min = 1 / min
 	}
 	max := DEFVAL.CameraMinScale
-	if max==0 {
-		max=100000
+	if max == 0 {
+		max = 100000
 	} else {
-		max=1/max
+		max = 1 / max
 	}
-	Clamp(&ps.CameraScale, min,max)
+	Clamp(&ps.CameraScale, min, max)
 
 	//ФИЗИКА
 	s := ps.Scene

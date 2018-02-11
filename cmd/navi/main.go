@@ -1,14 +1,14 @@
 package main
 
 import (
-"github.com/Shnifer/flierproto1/control"
-"github.com/Shnifer/flierproto1/fps"
-"github.com/veandco/go-sdl2/sdl"
-"log"
-"runtime"
-"time"
-MNT "github.com/Shnifer/flierproto1/mnt"
+	"github.com/Shnifer/flierproto1/control"
+	"github.com/Shnifer/flierproto1/fps"
+	MNT "github.com/Shnifer/flierproto1/mnt"
+	"github.com/veandco/go-sdl2/sdl"
+	"log"
+	"runtime"
 	"strconv"
+	"time"
 )
 
 //Константы экрана
@@ -25,9 +25,6 @@ const (
 	state_PilotSpace
 	state_NaviSpace
 )
-
-//Пока время синхронизации храним для звёзд в глобальной переменной
-var GlobalNetSessionTime float32
 
 func main() {
 
@@ -55,13 +52,13 @@ func main() {
 
 	lastPhysFrame := time.Now()
 
-	graphFrameN, physFrameN, ioFrameN, netFrameN := 0, 0, 0,0
+	graphFrameN, physFrameN, ioFrameN, netFrameN := 0, 0, 0, 0
 	var maxDt, maxGraphT, maxPhysT float32
 
 	breakMainLoop := make(chan bool, 1)
 
 	IOTick := time.Tick(15 * time.Millisecond)
-	NetTick := time.Tick(50*time.Millisecond)
+	NetTick := time.Tick(50 * time.Millisecond)
 loop:
 	for {
 		select {
@@ -78,6 +75,9 @@ loop:
 
 			//ПРИОРИТЕТ 1: тик ФИЗИЧЕСКОГО движка
 		case <-fps.PTick:
+			if NaviScene.NetSyncTime == 0 {
+				continue
+			}
 			deltaTime := float32(time.Since(lastPhysFrame).Seconds())
 			if deltaTime > maxDt {
 				maxDt = deltaTime
@@ -85,7 +85,9 @@ loop:
 			lastPhysFrame = time.Now()
 			physFrameN++
 
-			GlobalNetSessionTime += deltaTime
+			//МЫ ВЕДОМЫЕ, пока не олучили первое ненулевое значение из вне -- не трогаемся.
+			//это же флаг паузы показа
+			NaviScene.NetSyncTime += deltaTime
 			ControlHandler.BeforeUpdate()
 			NaviScene.Update(deltaTime)
 			T := float32(time.Since(lastPhysFrame).Seconds())
@@ -96,6 +98,9 @@ loop:
 			select {
 			//ПРИОРИТЕТ 2: тик ГРАФИЧЕСКОГО движка
 			case <-fps.GTick:
+				if NaviScene.NetSyncTime == 0 {
+					continue
+				}
 				graphFrameN++
 				start := time.Now()
 				renderer.Clear()
@@ -141,33 +146,33 @@ func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler) {
 }
 
 func DoMainLoopNet(scene *NaviCosmosScene) {
-	loop:
-	for{
+loop:
+	for {
 		//Слушаем пока канал готов сразу отдать
 		var msg string
 		select {
-			case v:=<-MNT.Client.Recv:
-				msg = v
-			default:
-				break loop
+		case v := <-MNT.Client.Recv:
+			msg = v
+		default:
+			break loop
 		}
 
-		cmd,param:=MNT.SplitMsg(msg)
-		if cmd ==MNT.IN_MSG {
+		cmd, param := MNT.SplitMsg(msg)
+		if cmd == MNT.IN_MSG {
 			msgtype, param := MNT.SplitMsg(param)
 			switch msgtype {
 			case MNT.SHIP_POS:
-				data,err:=MNT.DecodeShipPos(param)
-				if err!=nil{
+				data, err := MNT.DecodeShipPos(param)
+				if err != nil {
 					log.Panicln(err)
 				}
 				ProcShipData(scene, data)
 			case MNT.SESSION_TIME:
-				t, err:=strconv.ParseFloat(param,32)
-				if err!=nil{
+				t, err := strconv.ParseFloat(param, 32)
+				if err != nil {
 					log.Panicln(err)
 				}
-				GlobalNetSessionTime=float32(t)
+				scene.NetSyncTime = float32(t)
 			}
 		}
 	}

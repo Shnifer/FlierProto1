@@ -2,12 +2,12 @@ package mnt
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/Shnifer/flierproto1/v2"
 	"log"
 	"strconv"
 	"strings"
-	"errors"
-	"fmt"
 )
 
 //Сугубо для целей простоты обмена и маршалинга,
@@ -54,11 +54,11 @@ var GalaxyData []*Star
 //ЗАПУСКАЕТСЯ клиентом, желающим залутать актуальную карту
 //TODO: Все части проверять на маркировку ответа, пока считаем что При скачивании галактики ничего не свалится: (тик севера)?
 func DownloadGalaxy() {
-	res, err := Client.CommandResult(CMD_GETGALAXY,RES_GALAXY)
+	res, err := Client.CommandResult(CMD_GETGALAXY, RES_GALAXY)
 	if err != nil {
 		log.Panicln(err)
 	}
-	_,param:=SplitMsg(res)
+	_, param := SplitMsg(res)
 	NParts, err := strconv.Atoi(param)
 	if err != nil {
 		log.Panicln("DownloadGalaxy, num of Parts ", res, err)
@@ -93,7 +93,7 @@ func UploadGalaxy() []string {
 	NParts := ((L - 1) / GalaxyDataNetPart) + 1
 
 	res := make([]string, 1+NParts*2) //+1 на сообщении о количестве
-	res[0] = RES_GALAXY+" "+strconv.Itoa(NParts)
+	res[0] = RES_GALAXY + " " + strconv.Itoa(NParts)
 
 	for i := 0; i < NParts; i++ {
 		size := GalaxyDataNetPart
@@ -112,35 +112,35 @@ func UploadGalaxy() []string {
 	return res
 }
 
-type ShipPosData struct{
-	Pos V2.V2
-	Speed V2.V2
-	Angle float32
+type ShipPosData struct {
+	Pos        V2.V2
+	Speed      V2.V2
+	Angle      float32
 	AngleSpeed float32
 }
 
 func DecodeShipPos(param string) (*ShipPosData, error) {
-	parts:=strings.SplitN(param," ",6)
-	if len(parts)<6 {
+	parts := strings.SplitN(param, " ", 6)
+	if len(parts) < 6 {
 		return nil, errors.New("DecodeShipPos less than 6 params")
 	}
-	fparts:=make([]float32, 6)
-	for i:=0;i<6;i++{
-		val,err:=strconv.ParseFloat(parts[i],32)
-		if err!=nil{
+	fparts := make([]float32, 6)
+	for i := 0; i < 6; i++ {
+		val, err := strconv.ParseFloat(parts[i], 32)
+		if err != nil {
 			return nil, err
 		}
-		fparts[i]=float32(val)
+		fparts[i] = float32(val)
 	}
 	return &ShipPosData{
-		Pos: V2.V2{fparts[0],fparts[1]},
-		Speed: V2.V2{fparts[2],fparts[3]},
-		Angle: fparts[4],
+		Pos:        V2.V2{fparts[0], fparts[1]},
+		Speed:      V2.V2{fparts[2], fparts[3]},
+		Angle:      fparts[4],
 		AngleSpeed: fparts[5],
-	},nil
+	}, nil
 }
 
 func EncodeShipPos(data ShipPosData) string {
 	return fmt.Sprintf("%f %f %f %f %f %f",
-		data.Pos.X,data.Pos.Y,data.Speed.X,data.Speed.Y,data.Angle,data.AngleSpeed)
+		data.Pos.X, data.Pos.Y, data.Speed.X, data.Speed.Y, data.Angle, data.AngleSpeed)
 }

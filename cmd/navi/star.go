@@ -5,9 +5,9 @@ import (
 	V2 "github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 
-	"log"
 	"github.com/Shnifer/flierproto1/scene"
 	"github.com/Shnifer/flierproto1/texture"
+	"log"
 )
 
 type StarGameObject struct {
@@ -17,7 +17,7 @@ type StarGameObject struct {
 
 	UItex      *sdl.Texture
 	UI_H, UI_W int32
-	visZRot float32
+	visZRot    float32
 
 	//const фиксируем при загрузке галактики и используем для синхронизации по глобальному времени
 	startAngle float32
@@ -33,25 +33,25 @@ func (star *StarGameObject) GetGravState() (pos V2.V2, Mass float32) {
 
 func (s *StarGameObject) Update(dt float32) {
 
-	s.visZRot+=DEFVAL.StarRotationSpeed*dt
+	s.visZRot += DEFVAL.StarRotationSpeed * dt
 
 	if s.Parent == "" {
 		//независимый объект
 		s.Pos = s.Pos.Add(s.Dir.Mul(dt))
 	} else {
 		//спутник
-		s.Angle = s.startAngle+s.OrbSpeed * GlobalNetSessionTime
+		s.Angle = s.startAngle + s.OrbSpeed*s.scene.NetSyncTime
 		parentObj := s.scene.GetObjByID(s.Parent)
 		if parentObj == nil {
 			log.Panicln("Update of ", s.ID, "cant find the parent", s.Parent)
 		}
 		//TODO: полагаем что мы вращаемся ТОЛЬКО вокруг объекта с массой , а это HugeNass
 		var pp V2.V2
-		switch obj:=parentObj.(type){
+		switch obj := parentObj.(type) {
 		case *StarGameObject:
-			pp=obj.Pos
+			pp = obj.Pos
 		default:
-			log.Panicln("STRANGE PARENT of ",s,"is",parentObj)
+			log.Panicln("STRANGE PARENT of ", s, "is", parentObj)
 		}
 		s.Pos = pp.AddMul(V2.InDir(s.Angle), s.OrbDist)
 	}
@@ -81,5 +81,5 @@ func (star *StarGameObject) Init(scene *scene.Scene) {
 	star.tex = texture.Cache.GetTexture(star.TexName)
 
 	f := texture.Cache.GetFont("furore.otf", 9)
-	star.UItex, star.UI_W, star.UI_H = texture.Cache.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 200, 200, 200})
+	star.UItex, star.UI_W, star.UI_H = texture.Cache.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 255, 255, 200})
 }

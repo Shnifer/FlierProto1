@@ -81,8 +81,8 @@ func setDefDef() {
 		MainEngineParticlesRandSpeedK: 0.2,
 		MainEngineParticlesMaxIntense: 100,
 		StarRotationSpeed:             30,
-		CameraMaxScale: 1000,
-		CameraMinScale: 1,
+		CameraMaxScale:                1000,
+		CameraMinScale:                1,
 	}
 }
 

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/veandco/go-sdl2/sdl"
 	"github.com/Shnifer/flierproto1/texture"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type Anim struct {

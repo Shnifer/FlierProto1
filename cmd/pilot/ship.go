@@ -1,10 +1,10 @@
 package main
 
 import (
-	V2 "github.com/Shnifer/flierproto1/v2"
-	"github.com/veandco/go-sdl2/sdl"
 	"github.com/Shnifer/flierproto1/scene"
 	"github.com/Shnifer/flierproto1/texture"
+	V2 "github.com/Shnifer/flierproto1/v2"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type ShipGameObject struct {
@@ -71,8 +71,8 @@ func (ship *ShipGameObject) Update(dt float32) {
 	ship.momentSum = 0
 
 	//МАГИЧЕСКИ СТАБИЛИЗИРОВАЛИ угол, если angleSpeed мал
-	if abs(ship.angleSpeed)<0.5 {
-		ship.angleSpeed=0
+	if abs(ship.angleSpeed) < 0.5 {
+		ship.angleSpeed = 0
 	}
 
 	//Добавили сумму сил к скорости и обнулили сумматор

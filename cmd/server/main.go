@@ -31,8 +31,8 @@ type inString struct {
 //Сами комнаты в карте по ИД
 
 type Profile struct {
-	Room string
-	Role string
+	Room       string
+	Role       string
 	rdyForChat bool
 }
 
@@ -87,8 +87,8 @@ func newSenderConn(conn net.Conn) chan string {
 			}
 			writer.Flush()
 			showmsg := msg
-			if len(msg)>40 {
-				showmsg=msg[0:40]+"..."
+			if len(msg) > 40 {
+				showmsg = msg[0:40] + "..."
 			}
 			log.Println("sent", showmsg, "to", conn)
 		}
@@ -256,11 +256,11 @@ func HandleCommand(Room Room, sender net.Conn, role string, command, params stri
 			out <- s
 		}
 	case MNT.CMD_READYFORCHAT:
-		newprof:=Profiles[sender]
+		newprof := Profiles[sender]
 		newprof.rdyForChat = true
 		Profiles[sender] = newprof
 	case MNT.CMD_STOPCHAT:
-		newprof:=Profiles[sender]
+		newprof := Profiles[sender]
 		newprof.rdyForChat = false
 		Profiles[sender] = newprof
 	default:

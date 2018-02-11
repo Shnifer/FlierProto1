@@ -13,22 +13,22 @@ type fontType struct {
 }
 
 type TexCache struct {
-	mu       sync.Mutex
-	r        *sdl.Renderer
-	textures map[string]*sdl.Texture
-	fonts    map[fontType]*ttf.Font
-	texfilepath	string
+	mu           sync.Mutex
+	r            *sdl.Renderer
+	textures     map[string]*sdl.Texture
+	fonts        map[fontType]*ttf.Font
+	texfilepath  string
 	fontfilepath string
 }
 
 //Создаётся из вне после инициализации рендерера
-func NewTexCache(r *sdl.Renderer, texfilepath,fontfilepath string) TexCache {
+func NewTexCache(r *sdl.Renderer, texfilepath, fontfilepath string) TexCache {
 
 	return TexCache{
-		r:        r,
-		textures: make(map[string]*sdl.Texture),
-		fonts:    make(map[fontType]*ttf.Font),
-		texfilepath: texfilepath,
+		r:            r,
+		textures:     make(map[string]*sdl.Texture),
+		fonts:        make(map[fontType]*ttf.Font),
+		texfilepath:  texfilepath,
 		fontfilepath: fontfilepath,
 	}
 }
@@ -42,7 +42,7 @@ func (tc *TexCache) PreloadTextureNoSync(name string) {
 		//уже есть с таким именем
 		return
 	}
-	pixels, w, h, err := loadFileToPixels(tc.texfilepath+name)
+	pixels, w, h, err := loadFileToPixels(tc.texfilepath + name)
 	if err != nil {
 		log.Panicln(err)
 	}

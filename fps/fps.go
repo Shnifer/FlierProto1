@@ -7,9 +7,9 @@ import (
 )
 
 type FpsData struct {
-	Graph, Phys, Io,Net int
-	MaxDt               float32
-	MaxGraphT, MaxPhysT float32
+	Graph, Phys, Io, Net int
+	MaxDt                float32
+	MaxGraphT, MaxPhysT  float32
 }
 
 type ControlTickerData struct {
@@ -63,7 +63,7 @@ func ResetTickersAndStartListen(GPeriodMs, PPeriodMs float32) {
 func ListenAndShowFPS() chan<- FpsData {
 	inData := make(chan FpsData)
 
-	lastGraph, lastPhys, lastIO, lastNet := 0, 0, 0,0
+	lastGraph, lastPhys, lastIO, lastNet := 0, 0, 0, 0
 
 	FPS_UPDATE_S := float32(params.FPS_UPDATE_MS) / 1000
 	go func() {

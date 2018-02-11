@@ -34,22 +34,24 @@ type RenderCopyReq struct {
 	pivot     *sdl.Point
 	flip      sdl.RendererFlip
 }
+
 func (r RenderCopyReq) GetZ() ZLayer {
 	return r.z
 }
 
 type RenderDrawLinesReq struct {
-	color sdl.Color
+	color  sdl.Color
 	points []sdl.Point
-	z ZLayer
+	z      ZLayer
 }
+
 func (r RenderDrawLinesReq) GetZ() ZLayer {
 	return r.z
 }
 
 func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64, pivot *sdl.Point, flip sdl.RendererFlip) RenderCopyReq {
 	return RenderCopyReq{
-		tex: tex,
+		tex:   tex,
 		src:   src,
 		dest:  dest,
 		z:     z,
@@ -61,7 +63,7 @@ func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64
 
 func NewRenderReqSimple(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer) RenderCopyReq {
 	return RenderCopyReq{
-		tex: tex,
+		tex:   tex,
 		src:   src,
 		dest:  dest,
 		z:     z,
@@ -71,11 +73,11 @@ func NewRenderReqSimple(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer) RenderC
 	}
 }
 
-func NewRenderDrawLinesReq(points []sdl.Point, color sdl.Color, z ZLayer) RenderDrawLinesReq{
+func NewRenderDrawLinesReq(points []sdl.Point, color sdl.Color, z ZLayer) RenderDrawLinesReq {
 	return RenderDrawLinesReq{
-		points:points,
-		color:color,
-		z:z,
+		points: points,
+		color:  color,
+		z:      z,
 	}
 }
 
@@ -91,4 +93,3 @@ func (r RenderReqList) Swap(i, j int) {
 func (r RenderReqList) Less(i, j int) bool {
 	return r[i].GetZ() < r[j].GetZ()
 }
-

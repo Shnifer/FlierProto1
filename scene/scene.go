@@ -25,10 +25,13 @@ type Scene struct {
 
 	//включаем камеру в структуру
 	Сamera
+
+	//Внешне задаваемое время сессии, к нему могу обращаться звёзды для синхронизации вращения
+	NetSyncTime float32
 }
 
-func NewScene(r *sdl.Renderer, ch *control.Handler, camW,camH int32) *Scene {
-	return &Scene{R: r, Сamera: newCamera(camW,camH,1), ControlHandler: ch, idmap: make(map[string]SceneObject)}
+func NewScene(r *sdl.Renderer, ch *control.Handler, camW, camH int32) *Scene {
+	return &Scene{R: r, Сamera: newCamera(camW, camH, 1), ControlHandler: ch, idmap: make(map[string]SceneObject)}
 }
 
 func (s *Scene) AddObject(obj SceneObject) {

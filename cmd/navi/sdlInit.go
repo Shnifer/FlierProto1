@@ -3,12 +3,12 @@ package main
 
 import (
 	MNT "github.com/Shnifer/flierproto1/mnt"
+	"github.com/Shnifer/flierproto1/texture"
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 	"log"
 	"math/rand"
 	"time"
-	"github.com/Shnifer/flierproto1/texture"
 )
 
 const TexturePath = ResourcePath + "textures/"

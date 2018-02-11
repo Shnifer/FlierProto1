@@ -1,22 +1,22 @@
 package main
 
 import (
-	"github.com/Shnifer/flierproto1/v2"
 	"github.com/Shnifer/flierproto1/scene"
-	"github.com/veandco/go-sdl2/sdl"
 	"github.com/Shnifer/flierproto1/texture"
+	"github.com/Shnifer/flierproto1/v2"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type ShipGameObject struct {
-	pos   V2.V2
-	speed V2.V2
+	pos        V2.V2
+	speed      V2.V2
 	angle      float32
 	angleSpeed float32
 
 	fixedSize int32
 
 	scene *scene.Scene
-	tex *sdl.Texture
+	tex   *sdl.Texture
 }
 
 func newShip() *ShipGameObject {

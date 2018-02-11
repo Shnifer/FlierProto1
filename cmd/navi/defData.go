@@ -8,20 +8,20 @@ import (
 )
 
 type tDefVals struct {
-	ServerName                    string
-	tcpPort                       string
-	MIN_FRAME_MS                  int
-	MIN_PHYS_MS                   int
-	MAX_FRAME_MS                  int
-	MAX_PHYS_MS                   int
-	TickerBalancerOverhead        float32
-	FPS_UPDATE_MS                 int
-	FullScreen                    bool
-	WinW, WinH                    int32
-	RENDERER_ACCELERATED          bool
-	StarRotationSpeed             float32
-	ShipSize					int32
-	CameraScrollSpeed			float32
+	ServerName             string
+	tcpPort                string
+	MIN_FRAME_MS           int
+	MIN_PHYS_MS            int
+	MAX_FRAME_MS           int
+	MAX_PHYS_MS            int
+	TickerBalancerOverhead float32
+	FPS_UPDATE_MS          int
+	FullScreen             bool
+	WinW, WinH             int32
+	RENDERER_ACCELERATED   bool
+	StarRotationSpeed      float32
+	ShipSize               int32
+	CameraScrollSpeed      float32
 	//Обратное значение, не должно оказаться нулём!
 	CameraMinScale float32
 	CameraMaxScale float32
@@ -39,13 +39,13 @@ func setDefDef() {
 		MAX_PHYS_MS:            10,
 		FPS_UPDATE_MS:          1000,
 		TickerBalancerOverhead: 2,
-		WinW:                          1024,
-		WinH:                          768,
-		RENDERER_ACCELERATED:          true,
-		CameraMaxScale: 1000,
-		CameraMinScale: 1,
-		ShipSize: 30,
-		CameraScrollSpeed: 1,
+		WinW:                 1024,
+		WinH:                 768,
+		RENDERER_ACCELERATED: true,
+		CameraMaxScale:       1000,
+		CameraMinScale:       1,
+		ShipSize:             30,
+		CameraScrollSpeed:    1,
 	}
 }
 

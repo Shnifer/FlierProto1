@@ -20,12 +20,12 @@ type Сamera struct {
 	CamW, CamH int32
 }
 
-func newCamera(CamW,CamH int32,CameraScale float32) Сamera {
+func newCamera(CamW, CamH int32, CameraScale float32) Сamera {
 	return Сamera{
 		CameraScale: CameraScale,
-		CamW:CamW,
-		CamH:CamH,
-		}
+		CamW:        CamW,
+		CamH:        CamH,
+	}
 }
 
 //Прямоугольник во float32, для реальных координат

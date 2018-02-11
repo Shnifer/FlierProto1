@@ -5,8 +5,8 @@ import (
 	"errors"
 	"log"
 	"net"
-	"time"
 	"strings"
+	"time"
 )
 
 //TODO: пока один корабль и защитое название
@@ -19,7 +19,7 @@ type ClientConn struct {
 }
 
 const resultTimeOut = time.Second
-const waitPause = 10*time.Millisecond
+const waitPause = 10 * time.Millisecond
 
 //Посылает команду и возвращает строку из входного канала,
 //ожидаем ответ с командой pref
@@ -29,11 +29,11 @@ func (C ClientConn) CommandResult(com string, pref string) (string, error) {
 	for {
 		select {
 		case msg := <-C.Recv:
-			command,_:=SplitMsg(msg)
-			if command==pref{
-					return msg, nil
-				}
-			C.Recv<-msg
+			command, _ := SplitMsg(msg)
+			if command == pref {
+				return msg, nil
+			}
+			C.Recv <- msg
 			time.Sleep(waitPause)
 		case <-time.After(resultTimeOut):
 			return "", errors.New("TIMEOUT for command " + com)
@@ -42,7 +42,7 @@ func (C ClientConn) CommandResult(com string, pref string) (string, error) {
 }
 
 func (C ClientConn) Broadcast(data string) {
-	C.Send <- CMD_BROADCAST+" "+data
+	C.Send <- CMD_BROADCAST + " " + data
 }
 
 func ConnListener(conn net.Conn, Ch chan string) {
@@ -99,7 +99,7 @@ func LoginToServer(room, role string) error {
 		return errors.New("No connection established!")
 	}
 
-	res, err := Client.CommandResult(room + " " + role, RES_LOGIN)
+	res, err := Client.CommandResult(room+" "+role, RES_LOGIN)
 	if err != nil {
 		return err
 	}
@@ -137,26 +137,26 @@ func ConnectClientToServer(ServerName, TcpPort string) error {
 }
 
 func SplitMsg(s string) (command, params string) {
-	parts:=strings.SplitN(s," ",2)
-	L:=len(parts)
-	if L>0 {
+	parts := strings.SplitN(s, " ", 2)
+	L := len(parts)
+	if L > 0 {
 		command = parts[0]
-		if L>1 {
+		if L > 1 {
 			params = parts[1]
 		}
 	}
-	return command,params
+	return command, params
 }
 
 func ReadyForChat() {
 	log.Println("ReadyForChat()")
-	Client.Send<-CMD_READYFORCHAT
+	Client.Send <- CMD_READYFORCHAT
 }
 
 func SendBroadcast(cmd, param string) {
 	var ps string
-	if param!=""{
-		ps = " "+param
+	if param != "" {
+		ps = " " + param
 	}
-	Client.Send<-CMD_BROADCAST+" "+cmd+ps
+	Client.Send <- CMD_BROADCAST + " " + cmd + ps
 }

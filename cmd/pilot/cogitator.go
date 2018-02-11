@@ -2,15 +2,15 @@ package main
 
 import (
 	"github.com/Shnifer/flierproto1/control"
+	"github.com/Shnifer/flierproto1/scene"
 	"github.com/Shnifer/flierproto1/v2"
 	"github.com/veandco/go-sdl2/sdl"
 	"math"
-	"github.com/Shnifer/flierproto1/scene"
 )
 
 type PlayerInputs struct {
 	AxisX, AxisY float32
-	But1 bool
+	But1         bool
 }
 
 type CogitatorOutput struct {
@@ -19,7 +19,7 @@ type CogitatorOutput struct {
 }
 
 type ShipStats struct {
-	angle, angleSpeed,maxAngMomentum,mainThrust float32
+	angle, angleSpeed, maxAngMomentum, mainThrust float32
 }
 
 //В массштабе ввода: нажатая кнопка -1,1, ось - (-1,+1)
@@ -27,7 +27,7 @@ type Cogitator struct {
 	Inputs PlayerInputs
 	Stats  ShipStats
 
-	wantedAngle float32
+	wantedAngle      float32
 	wantedMainThrust float32
 }
 
@@ -39,16 +39,16 @@ func (c *Cogitator) Cogitate(dt float32) (CO CogitatorOutput) {
 	c.wantedAngle = angClamp(c.wantedAngle)
 
 	dAng := angSub(c.wantedAngle, c.Stats.angle)
-	if abs(dAng)<0.1 {
-		dAng=0
+	if abs(dAng) < 0.1 {
+		dAng = 0
 	}
-	CO.wantedAngThrust = dAng-c.Stats.angleSpeed/5
+	CO.wantedAngThrust = dAng - c.Stats.angleSpeed/5
 
 	c.wantedMainThrust += c.Inputs.AxisY * wantedThrustSpeed * dt
-	if c.wantedMainThrust > 1{
-		c.wantedMainThrust=1
-	} else if c.wantedMainThrust <0{
-		c.wantedMainThrust=0
+	if c.wantedMainThrust > 1 {
+		c.wantedMainThrust = 1
+	} else if c.wantedMainThrust < 0 {
+		c.wantedMainThrust = 0
 	}
 	CO.wantedMainThrust = c.wantedMainThrust
 	if c.Inputs.But1 {
@@ -139,21 +139,20 @@ func (c *Cogitator) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 	thrColor := Yellow
 	const greenthrD = 0.03
-	if abs(c.wantedMainThrust-c.Stats.mainThrust)<greenthrD {
+	if abs(c.wantedMainThrust-c.Stats.mainThrust) < greenthrD {
 		thrColor = Green
 	}
 
 	const angwidthOfThrust = 30
-	w_ang:=90+angwidthOfThrust*(1-2*c.wantedMainThrust)
+	w_ang := 90 + angwidthOfThrust*(1-2*c.wantedMainThrust)
 	wantedThr := psTrigon(center, w_ang, CompassR+105, CompassR+125, 20)
 	req4 := scene.NewRenderDrawLinesReq(wantedThr, thrColor, scene.Z_HUD)
 
-	c_ang:=90+angwidthOfThrust*(1-2*c.Stats.mainThrust)
+	c_ang := 90 + angwidthOfThrust*(1-2*c.Stats.mainThrust)
 	currentThr := psTrigon(center, c_ang, CompassR+95, CompassR+75, 20)
 	req5 := scene.NewRenderDrawLinesReq(currentThr, thrColor, scene.Z_HUD)
 
-
-	res = append(res, req1, req2, req3,req4,req5)
+	res = append(res, req1, req2, req3, req4, req5)
 
 	return res
 }
@@ -197,7 +196,7 @@ func sign(x float32) float32 {
 }
 
 func abs(x float32) float32 {
-	if x<0 {
+	if x < 0 {
 		return -x
 	} else {
 		return x

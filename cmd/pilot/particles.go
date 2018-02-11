@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/Shnifer/flierproto1/v2"
-	"github.com/veandco/go-sdl2/sdl"
 	"github.com/Shnifer/flierproto1/scene"
 	"github.com/Shnifer/flierproto1/texture"
+	"github.com/Shnifer/flierproto1/v2"
+	"github.com/veandco/go-sdl2/sdl"
 )
 
 type particle struct {
