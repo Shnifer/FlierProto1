@@ -58,14 +58,21 @@ func NewF32Sqr(center V2.V2, rad float32) f32Rect {
 
 //Преобразует координаты из реавльного вектора в координаты камеры сцены
 func (cam Сamera) CameraTransformV2(v V2.V2) (x, y int32) {
-	//TODO: положение камеры не по центру экрана
 	w := V2.Sub(v, cam.CameraCenter).Rotate(cam.CameraAngle).Mul(cam.CameraScale)
 	x = cam.CamW/2 + int32(w.X)
 	y = cam.CamH/2 - int32(w.Y)
 	return
 }
 
-func (cam Сamera) inCamera(rect sdl.Rect) bool {
+//Преобразует координаты из координат экрана в реальный вектор
+func (cam Сamera) CameraScrTransformV2(x, y int32) V2.V2 {
+	x = x - cam.CamW/2
+	y = cam.CamH/2 - y
+	V := V2.V2{float32(x), float32(y)}.Mul(1 / cam.CameraScale).Rotate(-cam.CameraAngle).Add(cam.CameraCenter)
+	return V
+}
+
+func (cam Сamera) InCamera(rect sdl.Rect) bool {
 	return !(rect.X+rect.W < 0 || rect.X > cam.CamW || rect.Y > cam.CamH || rect.Y+rect.H < 0)
 }
 
@@ -86,7 +93,7 @@ func (cam Сamera) CameraTransformRect(r f32Rect) (camRect *sdl.Rect, inCamera b
 		hW * 2,
 		hH * 2}
 
-	inCamera = cam.inCamera(res)
+	inCamera = cam.InCamera(res)
 
 	return &res, inCamera
 }
@@ -100,7 +107,20 @@ func (cam Scene) CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) (
 		halfsize * 2,
 		halfsize * 2}
 
-	inCamera = cam.inCamera(res)
+	inCamera = cam.InCamera(res)
+
+	return &res, inCamera
+}
+
+func (cam Scene) CameraRectByCenterAndScreenWH(center V2.V2, W,H int32) (camRect *sdl.Rect, inCamera bool) {
+	x, y := cam.CameraTransformV2(center)
+	res := sdl.Rect{
+		x - W/2,
+		y - H/2,
+		W,
+		H}
+
+	inCamera = cam.InCamera(res)
 
 	return &res, inCamera
 }

@@ -13,5 +13,7 @@
   "ShipSize":20,
   "CameraMinScale":1,
   "CameraMaxScale":30,
-  "CameraScrollSpeed":100
+  "CameraScrollSpeed":100,
+  "ShipScanRange": 400,
+  "ShipScanSpeed": 0.33
 }

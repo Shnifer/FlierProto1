@@ -25,6 +25,8 @@ type tDefVals struct {
 	//Обратное значение, не должно оказаться нулём!
 	CameraMinScale float32
 	CameraMaxScale float32
+	ShipScanRange  float32
+	ShipScanSpeed  float32
 }
 
 var DEFVAL tDefVals
@@ -46,6 +48,8 @@ func setDefDef() {
 		CameraMinScale:       1,
 		ShipSize:             30,
 		CameraScrollSpeed:    1,
+		ShipScanRange:        100,
+		ShipScanSpeed:        1,
 	}
 }
 

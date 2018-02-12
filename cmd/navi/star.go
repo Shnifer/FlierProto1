@@ -23,6 +23,14 @@ type StarGameObject struct {
 	startAngle float32
 }
 
+func (star *StarGameObject) IsClicked(x, y int32) bool {
+	V := star.scene.CameraScrTransformV2(x, y)
+	if V.Sub(star.Pos).LenSqr() <= star.ColRad*star.ColRad {
+		return true
+	}
+	return false
+}
+
 func (star *StarGameObject) GetID() string {
 	return star.ID
 }
@@ -68,8 +76,7 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 		req := scene.NewRenderReq(s.tex, nil, camRect, scene.Z_GAME_OBJECT, float64(s.visZRot), nil, sdl.FLIP_NONE)
 		//UI
-		cx, cy := s.scene.CameraTransformV2(rect.Center)
-		destRect := &sdl.Rect{cx - s.UI_W/2, cy - s.UI_H/2, s.UI_W, s.UI_H}
+		destRect,_ :=s.scene.CameraRectByCenterAndScreenWH(s.Pos, s.UI_W, s.UI_H)
 		reqUI := scene.NewRenderReqSimple(s.UItex, nil, destRect, scene.Z_ABOVE_OBJECT)
 		res = append(res, req, reqUI)
 	}
@@ -81,5 +88,5 @@ func (star *StarGameObject) Init(scene *scene.Scene) {
 	star.tex = texture.Cache.GetTexture(star.TexName)
 
 	f := texture.Cache.GetFont("furore.otf", 9)
-	star.UItex, star.UI_W, star.UI_H = texture.Cache.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 255, 255, 200})
+	star.UItex, star.UI_W, star.UI_H = texture.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 255, 255, 200})
 }

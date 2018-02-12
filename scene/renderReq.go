@@ -49,6 +49,28 @@ func (r RenderDrawLinesReq) GetZ() ZLayer {
 	return r.z
 }
 
+type RenderFilledCircleReq struct {
+	x, y, rad int32
+	color     sdl.Color
+	z         ZLayer
+}
+
+func (r RenderFilledCircleReq) GetZ() ZLayer {
+	return r.z
+}
+
+type RenderFilledPieReq struct {
+	x, y       int32
+	rad, inrad int32
+	start, end int32
+	color      sdl.Color
+	z          ZLayer
+}
+
+func (r RenderFilledPieReq) GetZ() ZLayer {
+	return r.z
+}
+
 func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64, pivot *sdl.Point, flip sdl.RendererFlip) RenderCopyReq {
 	return RenderCopyReq{
 		tex:   tex,
@@ -78,6 +100,29 @@ func NewRenderDrawLinesReq(points []sdl.Point, color sdl.Color, z ZLayer) Render
 		points: points,
 		color:  color,
 		z:      z,
+	}
+}
+
+func NewFilledCircleReq(x, y, rad int32, color sdl.Color, z ZLayer) RenderFilledCircleReq {
+	return RenderFilledCircleReq{
+		x:     x,
+		y:     y,
+		rad:   rad,
+		color: color,
+		z:     z,
+	}
+}
+
+func NewFilledPieReq(x, y, rad, inrad, start, end int32, color sdl.Color, z ZLayer) RenderFilledPieReq {
+	return RenderFilledPieReq{
+		x:     x,
+		y:     y,
+		rad:   rad,
+		inrad: inrad,
+		start: start,
+		end:   end,
+		color: color,
+		z:     z,
 	}
 }
 

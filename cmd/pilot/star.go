@@ -80,5 +80,5 @@ func (star *StarGameObject) Init(scene *scene.Scene) {
 	star.tex = texture.Cache.GetTexture(star.TexName)
 
 	f := texture.Cache.GetFont("furore.otf", 9)
-	star.UItex, star.UI_W, star.UI_H = texture.Cache.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 200, 200, 200})
+	star.UItex, star.UI_W, star.UI_H = texture.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 200, 200, 200})
 }

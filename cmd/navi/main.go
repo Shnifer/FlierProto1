@@ -58,7 +58,7 @@ func main() {
 	breakMainLoop := make(chan bool, 1)
 
 	IOTick := time.Tick(15 * time.Millisecond)
-	NetTick := time.Tick(50 * time.Millisecond)
+	NetTick := time.Tick(20 * time.Millisecond)
 loop:
 	for {
 		select {
@@ -75,6 +75,8 @@ loop:
 
 			//ПРИОРИТЕТ 1: тик ФИЗИЧЕСКОГО движка
 		case <-fps.PTick:
+			//МЫ ВЕДОМЫЕ, пока не олучили первое ненулевое значение из вне -- не трогаемся.
+			//это же флаг паузы показа
 			if NaviScene.NetSyncTime == 0 {
 				continue
 			}
@@ -85,8 +87,6 @@ loop:
 			lastPhysFrame = time.Now()
 			physFrameN++
 
-			//МЫ ВЕДОМЫЕ, пока не олучили первое ненулевое значение из вне -- не трогаемся.
-			//это же флаг паузы показа
 			NaviScene.NetSyncTime += deltaTime
 			ControlHandler.BeforeUpdate()
 			NaviScene.Update(deltaTime)
@@ -114,8 +114,8 @@ loop:
 				//ПРИОРИТЕТ 3: снятие состояния УПРАВЛЕНИЯ
 			case <-IOTick:
 				ioFrameN++
-				DoMainLoopIO(breakMainLoop, ControlHandler)
-				//ПРИОРИТЕТ 3: снятие состояния УПРАВЛЕНИЯ
+				DoMainLoopIO(breakMainLoop, ControlHandler, NaviScene)
+				//ПРИОРИТЕТ 3: обновление состояния СЕТИ
 			case <-NetTick:
 				netFrameN++
 				DoMainLoopNet(NaviScene)
@@ -125,7 +125,7 @@ loop:
 	}
 }
 
-func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler) {
+func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler, NaviScene *NaviCosmosScene) {
 	//Проверяем и хэндлим события СДЛ. Выход -- обязательно, а то не закроется
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch ev := event.(type) {
@@ -143,6 +143,9 @@ func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler) {
 		handler.HandleSDLEvent(event)
 	}
 	handler.IOUpdate()
+	//По сути обрабатываем OnClick одним обработчиком Сцены
+	clicks := handler.TakeMouseClicks()
+	NaviScene.UpdateClicks(clicks)
 }
 
 func DoMainLoopNet(scene *NaviCosmosScene) {
@@ -183,6 +186,9 @@ func ProcShipData(scene *NaviCosmosScene, data *MNT.ShipPosData) {
 	scene.ship.speed = data.Speed
 	scene.ship.angle = data.Angle
 	scene.ship.angleSpeed = data.AngleSpeed
+	if scene.camFollowShip{
+		scene.CameraCenter = scene.ship.pos
+	}
 }
 
 func timeCheck(caption string) func() {

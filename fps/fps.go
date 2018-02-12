@@ -67,6 +67,7 @@ func ListenAndShowFPS() chan<- FpsData {
 
 	FPS_UPDATE_S := float32(params.FPS_UPDATE_MS) / 1000
 	go func() {
+
 		overhead := params.TickerBalancerOverhead
 		for fps := range inData {
 			log.Println(
@@ -76,7 +77,9 @@ func ListenAndShowFPS() chan<- FpsData {
 				"net/s:", float32(fps.Net-lastNet)/FPS_UPDATE_S,
 				"max dt", fps.MaxDt*1000, "ms",
 				"maxGraph:", fps.MaxGraphT*1000, "ms",
-				"maxPhys:", fps.MaxPhysT*1000, "ms")
+				"maxPhys:", fps.MaxPhysT*1000, "ms",
+			)
+
 			lastGraph = fps.Graph
 			lastPhys = fps.Phys
 			lastIO = fps.Io

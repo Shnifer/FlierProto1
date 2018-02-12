@@ -4,6 +4,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
 	"log"
+	"math"
 	"sync"
 )
 
@@ -89,7 +90,7 @@ func (tc *TexCache) GetFont(name string, size int) *ttf.Font {
 	return font
 }
 
-func (tc *TexCache) CreateTextTex(r *sdl.Renderer, text string, font *ttf.Font, color sdl.Color) (T *sdl.Texture,
+func CreateTextTex(r *sdl.Renderer, text string, font *ttf.Font, color sdl.Color) (T *sdl.Texture,
 	w, h int32) {
 	surf, err := font.RenderUTF8Blended(text, color)
 	if err != nil {
@@ -105,4 +106,106 @@ func (tc *TexCache) CreateTextTex(r *sdl.Renderer, text string, font *ttf.Font, 
 		log.Panicln(err)
 	}
 	return tex, w, h
+}
+
+func CreateFilledCirle(r *sdl.Renderer, rad int32, color sdl.Color) *sdl.Texture {
+	pixels := make([]byte, (2*rad+1)*(2*rad+1)*4)
+	pt := (2*rad + 1) * 4
+	r2 := rad * rad
+	for y := -rad; y <= +rad; y++ {
+		for x := -rad; x <= +rad; x++ {
+			if x*x+y*y <= r2 {
+				ind := (y+rad)*pt + (x+rad)*4
+				pixels[ind+0] = color.R
+				pixels[ind+1] = color.G
+				pixels[ind+2] = color.B
+				pixels[ind+3] = color.A
+			}
+		}
+	}
+	tex, err := pixelsToTexture(r, pixels, int(2*rad+1), int(2*rad+1))
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	return tex
+}
+
+func CreateFilledPie(r *sdl.Renderer, rad, inrad, start, end int32, color sdl.Color) *sdl.Texture {
+	if inrad > rad {
+		inrad = rad
+	}
+	start = angClamp(start)
+	end = angClamp(end)
+	pixels := make([]byte, (2*rad+1)*(2*rad+1)*4)
+	pt := (2*rad + 1) * 4
+	r2 := rad * rad
+	inr2 := inrad * inrad
+
+	for y := -rad; y <= +rad; y++ {
+		for x := -rad; x <= +rad; x++ {
+			d2 := x*x + y*y
+			deg := getDeg(x, y)
+			if d2 <= r2 && d2 >= inr2 {
+				if end >= start {
+					if deg < start || deg > end {
+						continue
+					}
+				} else {
+					if deg > start && deg < end {
+						continue
+					}
+				}
+				ind := (y+rad)*pt + (x+rad)*4
+				pixels[ind+0] = color.R
+				pixels[ind+1] = color.G
+				pixels[ind+2] = color.B
+				pixels[ind+3] = color.A
+			}
+		}
+	}
+	tex, err := pixelsToTexture(r, pixels, int(2*rad+1), int(2*rad+1))
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	return tex
+}
+
+func getDeg(x, y int32) (deg int32) {
+	//1-использовать втроенную функцию, 2 - смотреть по табличке
+	const Pi = math.Pi
+	if x == 0 {
+		deg = 90
+		if y < 0 {
+			deg *= -1
+		}
+	} else {
+		t := float64(y) / float64(x)
+		ang := math.Atan(t)
+		deg = int32(ang / Pi * 180)
+	}
+	if x < 0 {
+		deg += 180
+	}
+	if deg < 0 {
+		deg += 360
+	}
+	return deg
+}
+
+//копия в main/cogitator
+func angClamp(ang int32) int32 {
+	switch {
+	case ang < 0:
+		{
+			return angClamp(ang + 360)
+		}
+	case ang >= 360:
+		{
+			return angClamp(ang - 360)
+		}
+	default:
+		return ang
+	}
 }

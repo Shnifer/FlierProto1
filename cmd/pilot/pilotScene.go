@@ -20,6 +20,8 @@ type PilotScene struct {
 	Ship          *PlayerShipGameObject
 	gravityCalc3D bool
 	showgizmos    bool
+	texCaption    *sdl.Texture
+	cap_w, cap_h  int32
 }
 
 func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
@@ -57,6 +59,10 @@ func (PilotScene *PilotScene) Init() {
 	} else {
 		Ship.pos = DEFVAL.StartLocationOffset
 	}
+
+	f := texture.Cache.GetFont("interdim.ttf", 20)
+	PilotScene.texCaption, PilotScene.cap_w, PilotScene.cap_w =
+		texture.CreateTextTex(PilotScene.R, "PILOT scene", f, sdl.Color{200, 200, 200, 255})
 
 	PilotScene.Scene.Init()
 }
@@ -232,8 +238,7 @@ func (ps PilotScene) Draw() {
 		}
 	}
 
-	f := texture.Cache.GetFont("interdim.ttf", 20)
-	t, w, h := texture.Cache.CreateTextTex(s.R, "PILOT scene", f, sdl.Color{200, 200, 200, 255})
-	rect := &sdl.Rect{100, 100, w, h}
-	s.R.Copy(t, nil, rect)
+	rect := &sdl.Rect{100, 100, ps.cap_w, ps.cap_h}
+	s.R.Copy(ps.texCaption, nil, rect)
+
 }

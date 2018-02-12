@@ -59,9 +59,9 @@ func main() {
 	breakMainLoop := make(chan bool, 1)
 
 	IOTick := time.Tick(15 * time.Millisecond)
-	NetTick := time.Tick(50 * time.Millisecond)
+	NetTick := time.Tick(20 * time.Millisecond)
 
-	loop:
+loop:
 	for {
 		select {
 		//команда на выход
@@ -96,6 +96,7 @@ func main() {
 			select {
 			//ПРИОРИТЕТ 2: тик ГРАФИЧЕСКОГО движка
 			case <-fps.GTick:
+
 				graphFrameN++
 				start := time.Now()
 				renderer.Clear()
@@ -112,9 +113,11 @@ func main() {
 				DoMainLoopIO(breakMainLoop, ControlHandler)
 			//ПРИОРИТЕТ 3: обновление данных с СЕТЬЮ
 			case <-NetTick:
+
 				netFrameN++
 				DoMainLoopNet(PilotScene)
 			default:
+				time.Sleep(100 * time.Microsecond)
 			}
 		}
 	}

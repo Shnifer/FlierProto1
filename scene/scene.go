@@ -2,6 +2,7 @@ package scene
 
 import (
 	"github.com/Shnifer/flierproto1/control"
+	"github.com/Shnifer/flierproto1/texture"
 	"github.com/veandco/go-sdl2/sdl"
 	"sort"
 )
@@ -12,6 +13,9 @@ type SceneObject interface {
 	Update(dt float32)
 	Draw(r *sdl.Renderer) RenderReqList
 	GetID() string
+}
+type Clickable interface {
+	IsClicked(x, y int32) bool
 }
 
 type Scene struct {
@@ -75,6 +79,14 @@ func (s Scene) Draw() {
 			s.R.SetDrawColor(req.color.R, req.color.G, req.color.B, req.color.A)
 			s.R.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 			s.R.DrawLines(req.points)
+		case RenderFilledCircleReq:
+			t := texture.CreateFilledCirle(s.R, req.rad, req.color)
+			defer t.Destroy()
+			s.R.Copy(t, nil, &sdl.Rect{req.x - req.rad, req.y - req.rad, 2 * req.rad, 2 * req.rad})
+		case RenderFilledPieReq:
+			t := texture.CreateFilledPie(s.R, req.rad, req.inrad, req.start, req.end, req.color)
+			defer t.Destroy()
+			s.R.Copy(t, nil, &sdl.Rect{req.x - req.rad, req.y - req.rad, 2 * req.rad, 2 * req.rad})
 		}
 	}
 }

@@ -91,6 +91,7 @@ func (c *Cogitator) GetInputs(CH *control.Handler) {
 	c.Inputs = Inputs
 }
 
+//Копия в текстурах
 func angClamp(ang float32) float32 {
 	switch {
 	case ang < 0:

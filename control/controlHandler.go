@@ -7,6 +7,10 @@ import (
 
 //Низкий уровень собирателя данных и состяния устройств ввода
 //Разбирает сообщения SDL.
+type MouseClick struct {
+	X, Y int32
+	But  uint8
+}
 type Handler struct {
 	//т.к. в перспективе это пойдёт в Апдейт и может быть параллельно -- мутекс
 	mu sync.RWMutex
@@ -22,8 +26,10 @@ type Handler struct {
 	pressedJoybuttons       map[uint8]bool
 	wasPressedJoybuttons    map[uint8]bool
 	bufWasPressedJoybuttons map[uint8]bool
+	wasClicked              []*MouseClick
 
-	axisX, axisY float32
+	axisX, axisY   float32
+	mouseX, mouseY int32
 }
 
 func NewControlHandler(joystick *sdl.Joystick) *Handler {
@@ -34,6 +40,7 @@ func NewControlHandler(joystick *sdl.Joystick) *Handler {
 		pressedJoybuttons:       make(map[uint8]bool),
 		wasPressedJoybuttons:    make(map[uint8]bool),
 		bufWasPressedJoybuttons: make(map[uint8]bool),
+		wasClicked:              make([]*MouseClick, 0),
 		joystick:                joystick,
 	}
 }
@@ -44,9 +51,10 @@ func (ch *Handler) HandleSDLEvent(event sdl.Event) {
 		ch.handleSDLKeyboardEvent(ev)
 	case *sdl.JoyButtonEvent:
 		ch.handleJoyButtonEvent(ev)
-
-		//ПОЗЖЕ МЫШЬ и КНОПКИ ДЖОЙСТИКА
-	//case *sdl.MouseMotionEvent:
+	case *sdl.MouseMotionEvent:
+		ch.handleMouseMotionEvent(ev)
+	case *sdl.MouseButtonEvent:
+		ch.handleMouseButtonEvent(ev)
 	default: //не наше событие
 	}
 }
@@ -87,6 +95,21 @@ func (ch *Handler) handleSDLKeyboardEvent(ev *sdl.KeyboardEvent) {
 		ch.pressedKeys[scan] = true
 	case sdl.KEYUP:
 		ch.pressedKeys[scan] = false
+	}
+	ch.mu.Unlock()
+}
+
+func (ch *Handler) handleMouseMotionEvent(ev *sdl.MouseMotionEvent) {
+	ch.mu.Lock()
+	ch.mouseX, ch.mouseY = ev.X, ev.Y
+	ch.mu.Unlock()
+}
+
+func (ch *Handler) handleMouseButtonEvent(ev *sdl.MouseButtonEvent) {
+	ch.mu.Lock()
+	if ev.Button == sdl.BUTTON_LEFT &&
+		ev.State == sdl.PRESSED {
+		ch.wasClicked = append(ch.wasClicked, &MouseClick{X: ev.X, Y: ev.Y, But: ev.Button})
 	}
 	ch.mu.Unlock()
 }
@@ -132,6 +155,21 @@ func (ch *Handler) WasJoybutton(button uint8) bool {
 	v := ch.wasPressedJoybuttons[button]
 	ch.mu.RUnlock()
 	return v
+}
+
+func (ch *Handler) TakeMouseClicks() []*MouseClick {
+	ch.mu.Lock()
+	defer ch.mu.Unlock()
+	res := make([]*MouseClick, len(ch.wasClicked))
+	copy(res, ch.wasClicked)
+	ch.wasClicked = ch.wasClicked[0:0]
+	return res
+}
+
+func (ch *Handler) MousePos() (x, y int32) {
+	ch.mu.RLock()
+	defer ch.mu.RUnlock()
+	return ch.mouseX, ch.mouseY
 }
 
 func (ch *Handler) AxisX() float32 {
