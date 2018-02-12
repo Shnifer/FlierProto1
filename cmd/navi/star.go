@@ -76,7 +76,7 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 		req := scene.NewRenderReq(s.tex, nil, camRect, scene.Z_GAME_OBJECT, float64(s.visZRot), nil, sdl.FLIP_NONE)
 		//UI
-		destRect,_ :=s.scene.CameraRectByCenterAndScreenWH(s.Pos, s.UI_W, s.UI_H)
+		destRect, _ := s.scene.CameraRectByCenterAndScreenWH(s.Pos, s.UI_W, s.UI_H)
 		reqUI := scene.NewRenderReqSimple(s.UItex, nil, destRect, scene.Z_ABOVE_OBJECT)
 		res = append(res, req, reqUI)
 	}

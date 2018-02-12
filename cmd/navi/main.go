@@ -186,7 +186,7 @@ func ProcShipData(scene *NaviCosmosScene, data *MNT.ShipPosData) {
 	scene.ship.speed = data.Speed
 	scene.ship.angle = data.Angle
 	scene.ship.angleSpeed = data.AngleSpeed
-	if scene.camFollowShip{
+	if scene.camFollowShip {
 		scene.CameraCenter = scene.ship.pos
 	}
 }

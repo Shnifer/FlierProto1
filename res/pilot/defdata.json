@@ -1,6 +1,6 @@
 {"ServerName":"localhost",
-  "MIN_FRAME_MS":10,
-  "MIN_PHYS_MS":4,
+  "MIN_FRAME_MS":15,
+  "MIN_PHYS_MS":8,
   "MAX_FRAME_MS":20,
   "MAX_PHYS_MS":10,
   "TickerBalancerOverhead":1.1,

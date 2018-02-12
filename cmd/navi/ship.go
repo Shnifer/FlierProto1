@@ -53,8 +53,7 @@ func (ship *ShipGameObject) Update(dt float32) {
 	ship.angle += ship.angleSpeed * dt
 	ship.pos.DoAddMul(ship.speed, dt)
 
-
-	if ship.CurScanStar!=nil{
+	if ship.CurScanStar != nil {
 		if ship.pos.Sub(ship.CurScanStar.Pos).Len() > ship.maxScanRange+ship.CurScanStar.ColRad {
 			log.Println("scaning range BROCKEN")
 			ship.StopNaviScan()

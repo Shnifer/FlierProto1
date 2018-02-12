@@ -20,8 +20,8 @@ type NaviCosmosScene struct {
 	cap_w, cap_h int32
 
 	scienceTex *sdl.Texture
-	sc_pos V2.V2
-	sc_w,sc_h int32
+	sc_pos     V2.V2
+	sc_w, sc_h int32
 	scShowTime float32
 }
 
@@ -63,14 +63,14 @@ func (NaviScene *NaviCosmosScene) Update(dt float32) {
 
 	//Обновляем состояние здесь
 	//Возможно вынести SCANER в отдельный объект
-	if NaviScene.ship.ScanProgress >=1 {
+	if NaviScene.ship.ScanProgress >= 1 {
 		NaviScene.ShowScienceData(NaviScene.ship.CurScanStar)
 		NaviScene.ship.StopNaviScan()
 	}
-	if NaviScene.scShowTime>0 {
-		NaviScene.scShowTime-=dt
-		if NaviScene.scShowTime<0 {
-			NaviScene.scShowTime= 0
+	if NaviScene.scShowTime > 0 {
+		NaviScene.scShowTime -= dt
+		if NaviScene.scShowTime < 0 {
+			NaviScene.scShowTime = 0
 		}
 	}
 }
@@ -152,25 +152,24 @@ func (s NaviCosmosScene) Draw() {
 	rect := &sdl.Rect{100, 100, s.cap_w, s.cap_h}
 	s.R.Copy(s.texCaption, nil, rect)
 
-	if s.scShowTime>0{
-		scR,inCamera := s.Scene.CameraRectByCenterAndScreenWH(s.sc_pos,s.sc_w,s.sc_h)
-		if inCamera{
-			s.R.Copy(s.scienceTex,nil,scR)
+	if s.scShowTime > 0 {
+		scR, inCamera := s.Scene.CameraRectByCenterAndScreenWH(s.sc_pos, int32(float32(s.sc_w)*s.scShowTime), int32(float32(s.sc_h)*s.scShowTime))
+		if inCamera {
+			s.R.Copy(s.scienceTex, nil, scR)
 		}
 	}
-
 
 }
 
 func (s *NaviCosmosScene) ShowScienceData(star *StarGameObject) {
-	if s.scienceTex!=nil {
+	if s.scienceTex != nil {
 		s.scienceTex.Destroy()
 	}
 
 	const startShowTime = 2
 
-	f := texture.Cache.GetFont("furore.otf", 48)
-	s.scienceTex,s.sc_w,s.sc_h = texture.CreateTextTex(s.R, "Scanned data: "+star.ID,f,sdl.Color{150,100,255,200})
+	f := texture.Cache.GetFont("furore.otf", 36)
+	s.scienceTex, s.sc_w, s.sc_h = texture.CreateTextTex(s.R, "Scanned data: "+star.ID, f, sdl.Color{150, 100, 255, 200})
 	s.scShowTime = startShowTime
 	s.sc_pos = star.Pos
 }

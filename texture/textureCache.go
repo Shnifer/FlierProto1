@@ -142,6 +142,7 @@ func CreateFilledPie(r *sdl.Renderer, rad, inrad, start, end int32, color sdl.Co
 	r2 := rad * rad
 	inr2 := inrad * inrad
 
+	//Завернуть циклы в горутину
 	for y := -rad; y <= +rad; y++ {
 		for x := -rad; x <= +rad; x++ {
 			d2 := x*x + y*y
@@ -164,6 +165,7 @@ func CreateFilledPie(r *sdl.Renderer, rad, inrad, start, end int32, color sdl.Co
 			}
 		}
 	}
+
 	tex, err := pixelsToTexture(r, pixels, int(2*rad+1), int(2*rad+1))
 	if err != nil {
 		log.Panicln(err)
