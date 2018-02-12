@@ -15,8 +15,6 @@ type StarGameObject struct {
 	scene *scene.Scene
 	tex   *sdl.Texture
 
-	UItex      *sdl.Texture
-	UI_H, UI_W int32
 	visZrot    float32
 	//const фиксируем при загрузке галактики и используем для синхронизации по глобальному времени
 	startAngle float32
@@ -75,10 +73,7 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 	return res
 }
 
-func (star *StarGameObject) Init(scene *scene.Scene) {
-	star.scene = scene
+func (star *StarGameObject) Init(s *scene.Scene) {
+	star.scene = s
 	star.tex = texture.Cache.GetTexture(star.TexName)
-
-	f := texture.Cache.GetFont("furore.otf", 9)
-	star.UItex, star.UI_W, star.UI_H = texture.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 200, 200, 200})
 }

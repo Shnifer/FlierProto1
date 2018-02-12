@@ -20,8 +20,8 @@ type PilotScene struct {
 	Ship          *PlayerShipGameObject
 	gravityCalc3D bool
 	showgizmos    bool
-	texCaption    *sdl.Texture
-	cap_w, cap_h  int32
+
+	fpsUI	*scene.TextUI
 }
 
 func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
@@ -61,8 +61,16 @@ func (PilotScene *PilotScene) Init() {
 	}
 
 	f := texture.Cache.GetFont("interdim.ttf", 20)
-	PilotScene.texCaption, PilotScene.cap_w, PilotScene.cap_w =
-		texture.CreateTextTex(PilotScene.R, "PILOT scene", f, sdl.Color{200, 200, 200, 255})
+	SceneCaption := scene.NewTextUI("PILOT scene", f, sdl.Color{200, 200, 200, 255}, scene.Z_STAT_HUD, scene.FROM_ANGLE)
+	SceneCaption.X, SceneCaption.Y = 100, 100
+	PilotScene.AddObject(SceneCaption)
+
+	pf:=texture.Cache.GetFont("phantom.ttf", 14)
+	fpsUI := scene.NewTextUI("fps:", pf, sdl.Color{255,0,0,255}, scene.Z_STAT_HUD, scene.FROM_ANGLE)
+	fpsUI.X, fpsUI.Y = 10,10
+
+	PilotScene.AddObject(fpsUI)
+	PilotScene.fpsUI = fpsUI
 
 	PilotScene.Scene.Init()
 }
@@ -237,8 +245,8 @@ func (ps PilotScene) Draw() {
 			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
 		}
 	}
+}
 
-	rect := &sdl.Rect{100, 100, ps.cap_w, ps.cap_h}
-	s.R.Copy(ps.texCaption, nil, rect)
-
+func (ps *PilotScene) showFps(data string){
+	ps.fpsUI.ChangeText("fps: "+data)
 }

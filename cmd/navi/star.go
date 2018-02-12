@@ -21,6 +21,8 @@ type StarGameObject struct {
 
 	//const фиксируем при загрузке галактики и используем для синхронизации по глобальному времени
 	startAngle float32
+
+	nameUI *scene.TextUI
 }
 
 func (star *StarGameObject) IsClicked(x, y int32) bool {
@@ -75,18 +77,21 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 	if inCamera {
 
 		req := scene.NewRenderReq(s.tex, nil, camRect, scene.Z_GAME_OBJECT, float64(s.visZRot), nil, sdl.FLIP_NONE)
+		res = append(res, req)
 		//UI
-		destRect, _ := s.scene.CameraRectByCenterAndScreenWH(s.Pos, s.UI_W, s.UI_H)
-		reqUI := scene.NewRenderReqSimple(s.UItex, nil, destRect, scene.Z_ABOVE_OBJECT)
-		res = append(res, req, reqUI)
+		s.nameUI.X,s.nameUI.Y = s.scene.CameraTransformV2(s.Pos)
+		reqUI:=s.nameUI.Draw(r)
+		res = append(res, reqUI...)
 	}
 	return res
 }
 
-func (star *StarGameObject) Init(scene *scene.Scene) {
-	star.scene = scene
+func (star *StarGameObject) Init(sc *scene.Scene) {
+	star.scene = sc
 	star.tex = texture.Cache.GetTexture(star.TexName)
 
+
 	f := texture.Cache.GetFont("furore.otf", 9)
-	star.UItex, star.UI_W, star.UI_H = texture.CreateTextTex(scene.R, star.ID, f, sdl.Color{200, 255, 255, 200})
+	star.nameUI = scene.NewTextUI(star.ID, f, sdl.Color{200, 255, 255, 200}, scene.Z_ABOVE_OBJECT, scene.FROM_CENTER)
+	star.nameUI.Init(sc)
 }

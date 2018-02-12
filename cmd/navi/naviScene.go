@@ -16,13 +16,12 @@ type NaviCosmosScene struct {
 	GlobalTime    float32
 	camFollowShip bool
 
-	texCaption   *sdl.Texture
-	cap_w, cap_h int32
-
 	scienceTex *sdl.Texture
 	sc_pos     V2.V2
 	sc_w, sc_h int32
 	scShowTime float32
+
+	fpsUI *scene.TextUI
 }
 
 func NewNaviCosmosScene(r *sdl.Renderer, ch *control.Handler) *NaviCosmosScene {
@@ -50,8 +49,16 @@ func (NaviScene *NaviCosmosScene) Init() {
 	NaviScene.AddObject(Ship)
 
 	f := texture.Cache.GetFont("interdim.ttf", 20)
-	NaviScene.texCaption, NaviScene.cap_w, NaviScene.cap_h =
-		texture.CreateTextTex(NaviScene.R, "NAVIGATOR scene", f, sdl.Color{200, 200, 200, 255})
+	SceneCaption := scene.NewTextUI("NAVIGATOR scene", f, sdl.Color{200, 200, 200, 255}, scene.Z_STAT_HUD, scene.FROM_ANGLE)
+	SceneCaption.X, SceneCaption.Y = 100, 100
+	NaviScene.AddObject(SceneCaption)
+
+	pf:=texture.Cache.GetFont("phantom.ttf", 14)
+	fpsUI := scene.NewTextUI("fps:", pf, sdl.Color{255,0,0,255}, scene.Z_STAT_HUD, scene.FROM_ANGLE)
+	fpsUI.X, fpsUI.Y = 10,10
+
+	NaviScene.AddObject(fpsUI)
+	NaviScene.fpsUI = fpsUI
 
 	NaviScene.Scene.Init()
 }
@@ -73,6 +80,9 @@ func (NaviScene *NaviCosmosScene) Update(dt float32) {
 			NaviScene.scShowTime = 0
 		}
 	}
+	if NaviScene.camFollowShip {
+		NaviScene.CameraCenter = NaviScene.ship.pos
+	}
 }
 
 func (NaviScene *NaviCosmosScene) cameraControlUpdate(dt float32) {
@@ -82,8 +92,7 @@ func (NaviScene *NaviCosmosScene) cameraControlUpdate(dt float32) {
 	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_KP_MINUS) {
 		NaviScene.CameraScale *= (1 - dt)
 	}
-	if NaviScene.camFollowShip || NaviScene.ControlHandler.GetKey(sdl.SCANCODE_SPACE) {
-		NaviScene.CameraCenter = NaviScene.ship.pos
+	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_SPACE) {
 		NaviScene.camFollowShip = true
 	}
 
@@ -149,9 +158,6 @@ func (s *NaviCosmosScene) UpdateClicks(clicks []*control.MouseClick) {
 func (s NaviCosmosScene) Draw() {
 	s.Scene.Draw()
 
-	rect := &sdl.Rect{100, 100, s.cap_w, s.cap_h}
-	s.R.Copy(s.texCaption, nil, rect)
-
 	if s.scShowTime > 0 {
 		scR, inCamera := s.Scene.CameraRectByCenterAndScreenWH(s.sc_pos, int32(float32(s.sc_w)*s.scShowTime), int32(float32(s.sc_h)*s.scShowTime))
 		if inCamera {
@@ -172,4 +178,8 @@ func (s *NaviCosmosScene) ShowScienceData(star *StarGameObject) {
 	s.scienceTex, s.sc_w, s.sc_h = texture.CreateTextTex(s.R, "Scanned data: "+star.ID, f, sdl.Color{150, 100, 255, 200})
 	s.scShowTime = startShowTime
 	s.sc_pos = star.Pos
+}
+
+func (ps *NaviCosmosScene) showFps(data string){
+	ps.fpsUI.ChangeText("fps: "+data)
 }
