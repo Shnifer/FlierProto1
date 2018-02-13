@@ -87,6 +87,10 @@ func (s Scene) Draw() {
 			t := texture.CreateFilledPie(s.R, req.rad, req.inrad, req.start, req.end, req.color)
 			defer t.Destroy()
 			s.R.Copy(t, nil, &sdl.Rect{req.x - req.rad, req.y - req.rad, 2 * req.rad, 2 * req.rad})
+		case RenderRectsReq:
+			s.R.SetDrawColor(req.color.R, req.color.G, req.color.B, req.color.A)
+			s.R.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
+			s.R.DrawRects(req.rects)
 		}
 	}
 }

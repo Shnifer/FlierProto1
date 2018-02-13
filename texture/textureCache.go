@@ -48,7 +48,7 @@ func (tc *TexCache) PreloadTextureNoSync(name string) {
 		log.Panicln(err)
 	}
 
-	tex, err := pixelsToTexture(tc.r, pixels, w, h)
+	tex, err := PixelsToTexture(tc.r, pixels, w, h)
 	if err != nil {
 		log.Panicln("can't load tex:", err)
 	}
@@ -90,6 +90,7 @@ func (tc *TexCache) GetFont(name string, size int) *ttf.Font {
 	return font
 }
 
+//НЕ ЗАБУДЬ УДАЛИТЬ ПРЕДЫДУЩУЮ В НАЧАЛЕ
 func CreateTextTex(r *sdl.Renderer, text string, font *ttf.Font, color sdl.Color) (T *sdl.Texture,
 	w, h int32) {
 	surf, err := font.RenderUTF8Blended(text, color)
@@ -97,11 +98,11 @@ func CreateTextTex(r *sdl.Renderer, text string, font *ttf.Font, color sdl.Color
 		log.Panicln(err)
 	}
 	defer surf.Free()
-
 	w = surf.W
 	h = surf.H
 
 	tex, err := r.CreateTextureFromSurface(surf)
+
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -123,7 +124,7 @@ func CreateFilledCirle(r *sdl.Renderer, rad int32, color sdl.Color) *sdl.Texture
 			}
 		}
 	}
-	tex, err := pixelsToTexture(r, pixels, int(2*rad+1), int(2*rad+1))
+	tex, err := PixelsToTexture(r, pixels, int(2*rad+1), int(2*rad+1))
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -166,7 +167,7 @@ func CreateFilledPie(r *sdl.Renderer, rad, inrad, start, end int32, color sdl.Co
 		}
 	}
 
-	tex, err := pixelsToTexture(r, pixels, int(2*rad+1), int(2*rad+1))
+	tex, err := PixelsToTexture(r, pixels, int(2*rad+1), int(2*rad+1))
 	if err != nil {
 		log.Panicln(err)
 	}

@@ -68,7 +68,7 @@ func (at *AnimTex) getRect(i int32) *sdl.Rect {
 //	}
 //}
 
-func pixelsToTexture(renderer *sdl.Renderer, pixels []byte, w, h int) (*sdl.Texture, error) {
+func PixelsToTexture(renderer *sdl.Renderer, pixels []byte, w, h int) (*sdl.Texture, error) {
 	tex, err := renderer.CreateTexture(sdl.PIXELFORMAT_ABGR8888, sdl.TEXTUREACCESS_STREAMING, int32(w), int32(h))
 	if err != nil {
 		return nil, err

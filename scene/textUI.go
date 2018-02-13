@@ -11,12 +11,11 @@ const FROM_ANGLE bool = false
 const FROM_CENTER bool = true
 
 var WHITE = sdl.Color{255,255,255,255}
+var RED = sdl.Color{255,0,0,255}
 
 type TextUI struct {
 	text         string
 	font         *ttf.Font
-	tex          *sdl.Texture
-	tex_w, tex_h int32
 	X, Y         int32
 	FromCenter   bool
 	color        sdl.Color
@@ -29,6 +28,8 @@ type TextUI struct {
 	needReworkTex bool
 
 	scene *Scene
+	tex          *sdl.Texture
+	tex_w, tex_h int32
 }
 
 func NewTextUI(text string, font *ttf.Font, color sdl.Color, z ZLayer, fromCenter bool) *TextUI {
@@ -42,7 +43,7 @@ func NewTextUI(text string, font *ttf.Font, color sdl.Color, z ZLayer, fromCente
 	}
 }
 func (t *TextUI) reworkTex() {
-	if t.tex != nil {
+	if t.tex !=nil{
 		t.tex.Destroy()
 	}
 	t.tex, t.tex_w, t.tex_h = texture.CreateTextTex(t.scene.R, t.text, t.font, t.color)
@@ -89,10 +90,11 @@ func (t *TextUI) Init(s *Scene) {
 func (t *TextUI) Update(dt float32) {
 }
 
-func (t TextUI) Draw(r *sdl.Renderer) (res RenderReqList) {
+func (t *TextUI) Draw(r *sdl.Renderer) (res RenderReqList) {
 	if t.needReworkTex {
 		t.reworkTex()
 	}
+
 	w := int32(float32(t.tex_w) * t.Scale)
 	h := int32(float32(t.tex_h) * t.Scale)
 

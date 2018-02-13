@@ -1,6 +1,8 @@
 package scene
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 //Слои вывода объектов на рендер
 type ZLayer int
@@ -71,6 +73,16 @@ func (r RenderFilledPieReq) GetZ() ZLayer {
 	return r.z
 }
 
+type RenderRectsReq struct {
+	rects	[]sdl.Rect
+	color      sdl.Color
+	z          ZLayer
+}
+
+func (r RenderRectsReq) GetZ() ZLayer {
+	return r.z
+}
+
 func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64, pivot *sdl.Point, flip sdl.RendererFlip) RenderCopyReq {
 	return RenderCopyReq{
 		tex:   tex,
@@ -103,6 +115,7 @@ func NewRenderDrawLinesReq(points []sdl.Point, color sdl.Color, z ZLayer) Render
 	}
 }
 
+
 func NewFilledCircleReq(x, y, rad int32, color sdl.Color, z ZLayer) RenderFilledCircleReq {
 	return RenderFilledCircleReq{
 		x:     x,
@@ -123,6 +136,21 @@ func NewFilledPieReq(x, y, rad, inrad, start, end int32, color sdl.Color, z ZLay
 		end:   end,
 		color: color,
 		z:     z,
+	}
+}
+
+func NewRectsReq(rects []sdl.Rect, color sdl.Color, z ZLayer) RenderRectsReq{
+	return RenderRectsReq{
+		rects:rects,
+		color:color,
+		z:z,
+	}
+}
+func NewRectReq(rect sdl.Rect, color sdl.Color, z ZLayer) RenderRectsReq{
+	return RenderRectsReq{
+		rects:[]sdl.Rect{rect},
+		color:color,
+		z:z,
 	}
 }
 

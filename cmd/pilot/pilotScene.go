@@ -9,6 +9,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"math"
+	"strings"
 )
 
 type HugeMass interface {
@@ -41,12 +42,20 @@ func (PilotScene *PilotScene) Init() {
 	Particles := newParticleSystem(DEFVAL.MainEngineMaxParticles)
 	PilotScene.AddObject(Particles)
 
+	//TODO: УБРАТЬ РУЧНУЮ НЕБУЛУ
+	var nebulaPoints []*StarGameObject
 	//DATA INIT
 	for _, starData := range MNT.GalaxyData {
 		StarGO := &StarGameObject{Star: starData, startAngle: starData.Angle}
+		if strings.HasPrefix(starData.ID,"asteroid") {
+			nebulaPoints = append(nebulaPoints, StarGO)
+		}
 		PilotScene.AddObject(StarGO)
 	}
 	log.Println("Stars on scene", len(MNT.GalaxyData))
+
+	Nebula:=NewNebula(nebulaPoints)
+	PilotScene.AddObject(Nebula)
 
 	Ship := NewPlayerShip(Particles)
 	PilotScene.Ship = Ship
