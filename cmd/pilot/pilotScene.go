@@ -9,7 +9,6 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"math"
-	"strings"
 )
 
 type HugeMass interface {
@@ -47,7 +46,7 @@ func (PilotScene *PilotScene) Init() {
 	//DATA INIT
 	for _, starData := range MNT.GalaxyData {
 		StarGO := &StarGameObject{Star: starData, startAngle: starData.Angle}
-		if strings.HasPrefix(starData.ID,"asteroid") {
+		if starData.ID == "jupiter" || starData.Parent == "jupiter" {
 			nebulaPoints = append(nebulaPoints, StarGO)
 		}
 		PilotScene.AddObject(StarGO)
