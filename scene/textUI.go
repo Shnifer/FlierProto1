@@ -10,24 +10,24 @@ import (
 const FROM_ANGLE bool = false
 const FROM_CENTER bool = true
 
-var WHITE = sdl.Color{255,255,255,255}
-var RED = sdl.Color{255,0,0,255}
+var WHITE = sdl.Color{255, 255, 255, 255}
+var RED = sdl.Color{255, 0, 0, 255}
 
 type TextUI struct {
-	text         string
-	font         *ttf.Font
-	X, Y         int32
-	FromCenter   bool
-	color        sdl.Color
-	Scale        float32
-	Angle        float32
+	text       string
+	font       *ttf.Font
+	X, Y       int32
+	FromCenter bool
+	color      sdl.Color
+	Scale      float32
+	Angle      float32
 
 	Z ZLayer
 
 	//Флаг что текстуру нужно пересобрать перед отрисовкой
 	needReworkTex bool
 
-	scene *Scene
+	scene        *Scene
 	tex          *sdl.Texture
 	tex_w, tex_h int32
 }
@@ -43,7 +43,7 @@ func NewTextUI(text string, font *ttf.Font, color sdl.Color, z ZLayer, fromCente
 	}
 }
 func (t *TextUI) reworkTex() {
-	if t.tex !=nil{
+	if t.tex != nil {
 		t.tex.Destroy()
 	}
 	t.tex, t.tex_w, t.tex_h = texture.CreateTextTex(t.scene.R, t.text, t.font, t.color)

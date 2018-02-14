@@ -33,6 +33,7 @@ type tDefVals struct {
 	ShipSize                      float32
 	ShipFixedSize                 int32
 	ShipShowFixed                 bool
+	ShipShowBotOffset			 int32
 	ShipThrustAxel                float32
 	ShipMaxThrustForce            float32
 	ShipAngAxel                   float32

@@ -53,9 +53,9 @@ func (NaviScene *NaviCosmosScene) Init() {
 	SceneCaption.X, SceneCaption.Y = 100, 100
 	NaviScene.AddObject(SceneCaption)
 
-	pf:=texture.Cache.GetFont("phantom.ttf", 14)
-	fpsUI := scene.NewTextUI("fps:", pf, sdl.Color{255,0,0,255}, scene.Z_STAT_HUD, scene.FROM_ANGLE)
-	fpsUI.X, fpsUI.Y = 10,10
+	pf := texture.Cache.GetFont("phantom.ttf", 14)
+	fpsUI := scene.NewTextUI("fps:", pf, sdl.Color{255, 0, 0, 255}, scene.Z_STAT_HUD, scene.FROM_ANGLE)
+	fpsUI.X, fpsUI.Y = 10, 10
 
 	NaviScene.AddObject(fpsUI)
 	NaviScene.fpsUI = fpsUI
@@ -180,6 +180,6 @@ func (s *NaviCosmosScene) ShowScienceData(star *StarGameObject) {
 	s.sc_pos = star.Pos
 }
 
-func (ps *NaviCosmosScene) showFps(data string){
-	ps.fpsUI.ChangeText("fps: "+data)
+func (ps *NaviCosmosScene) showFps(data string) {
+	ps.fpsUI.ChangeText("fps: " + data)
 }

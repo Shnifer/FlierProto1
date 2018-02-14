@@ -9,6 +9,7 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"math"
+	"strings"
 )
 
 type HugeMass interface {
@@ -21,13 +22,19 @@ type PilotScene struct {
 	gravityCalc3D bool
 	showgizmos    bool
 
-	fpsUI	*scene.TextUI
+	//корабль ниже центра, процент от WinH
+	shipBack int32
+	camFollowAngle bool
+
+	fpsUI *scene.TextUI
 }
 
 func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 	return &PilotScene{
 		Scene:         scene.NewScene(r, ch, winW, winH),
 		gravityCalc3D: DEFVAL.GravityCalc3D,
+		shipBack: DEFVAL.ShipShowBotOffset,
+		camFollowAngle:true,
 		showgizmos:    true,
 	}
 }
@@ -42,19 +49,19 @@ func (PilotScene *PilotScene) Init() {
 	PilotScene.AddObject(Particles)
 
 	//TODO: УБРАТЬ РУЧНУЮ НЕБУЛУ
-	var nebulaPoints []*StarGameObject
-	//DATA INIT
+	var nebula1Points []*StarGameObject
+		//DATA INIT
 	for _, starData := range MNT.GalaxyData {
 		StarGO := &StarGameObject{Star: starData, startAngle: starData.Angle}
-		if starData.ID == "jupiter" || starData.Parent == "jupiter" {
-			nebulaPoints = append(nebulaPoints, StarGO)
+		if strings.HasPrefix(starData.ID,"asteroid") {
+			nebula1Points = append(nebula1Points, StarGO)
 		}
 		PilotScene.AddObject(StarGO)
 	}
 	log.Println("Stars on scene", len(MNT.GalaxyData))
 
-	Nebula:=NewNebula(nebulaPoints)
-	PilotScene.AddObject(Nebula)
+	Nebula1 := NewNebula("nebula1",nebula1Points,150)
+	PilotScene.AddObject(Nebula1)
 
 	Ship := NewPlayerShip(Particles)
 	PilotScene.Ship = Ship
@@ -73,9 +80,9 @@ func (PilotScene *PilotScene) Init() {
 	SceneCaption.X, SceneCaption.Y = 100, 100
 	PilotScene.AddObject(SceneCaption)
 
-	pf:=texture.Cache.GetFont("phantom.ttf", 14)
-	fpsUI := scene.NewTextUI("fps:", pf, sdl.Color{255,0,0,255}, scene.Z_STAT_HUD, scene.FROM_ANGLE)
-	fpsUI.X, fpsUI.Y = 10,10
+	pf := texture.Cache.GetFont("phantom.ttf", 14)
+	fpsUI := scene.NewTextUI("fps:", pf, sdl.Color{255, 0, 0, 255}, scene.Z_STAT_HUD, scene.FROM_ANGLE)
+	fpsUI.X, fpsUI.Y = 10, 10
 
 	PilotScene.AddObject(fpsUI)
 	PilotScene.fpsUI = fpsUI
@@ -118,7 +125,7 @@ func (ps *PilotScene) Update(dt float32) {
 	}
 	Clamp(&ps.CameraScale, min, max)
 
-	//ФИЗИКА
+	//ФИЗИКА - ГРАВИТАЦИЯ
 	s := ps.Scene
 	for _, obj := range s.Objects {
 		attractor, ok := obj.(HugeMass)
@@ -128,18 +135,30 @@ func (ps *PilotScene) Update(dt float32) {
 		force := GravityForce(attractor, ps.Ship.pos, ps.gravityCalc3D)
 		ps.Ship.ApplyForce(force)
 	}
+	//ФИЗИКА - ТРЕНИЕ
+	const kTens = 0.2
+	tensForce:=ps.Ship.speed.Mul(-kTens)
+	neb:=s.GetObjByID("nebula1").(*Nebula)
+	if neb.isInside(ps.Ship.pos) {
+		log.Printf("WE ARE INSIDE A NEBULA!!! Ship speed: %f",ps.Ship.speed.Len())
+		ps.Ship.ApplyForce(tensForce)
+	}
+
+
 
 	//ВНЕШНИЕ ПРЯМЫЕ ВОЗДЕЙСТВИЯ НИ КИНЕМАТИКУ КОРАБЛЯ
 	if ps.ControlHandler.GetKey(sdl.SCANCODE_SPACE) {
 		ps.Ship.speed = V2.V2{}
 		ps.Ship.angleSpeed = 0
 		ps.CameraAngle = 0
+		ps.camFollowAngle = true
 	}
 
 	if ps.ControlHandler.GetKey(sdl.SCANCODE_KP_ENTER) {
 		ps.Ship.speed = V2.V2{}
 		ps.Ship.angleSpeed = 0
 		ps.CameraAngle = 0
+		ps.camFollowAngle = true
 		startLoc := ps.GetObjByID(DEFVAL.StartLocationName)
 		if startLoc != nil {
 			pos, _ := startLoc.(HugeMass).GetGravState()
@@ -164,18 +183,32 @@ func (ps *PilotScene) Update(dt float32) {
 		log.Printf("Show Gizmos = %v", ps.showgizmos)
 	}
 
+	if ps.ControlHandler.WasKey(sdl.SCANCODE_4) {
+		ps.GetObjByID("nebula1").(*Nebula).drawMode =
+			(ps.GetObjByID("nebula1").(*Nebula).drawMode+1)%3
+		log.Println("Nebula Mod Changed")
+	}
+
 	//АПДЕЙТ СЦЕНЫ
 	s.Update(dt)
 
-	//Сдвинули камеру
-	ps.CameraCenter = ps.Ship.pos
-
 	if ps.ControlHandler.GetKey(sdl.SCANCODE_Q) {
 		ps.CameraAngle += 180 * dt
+		ps.camFollowAngle = false
 	}
 	if ps.ControlHandler.GetKey(sdl.SCANCODE_E) {
 		ps.CameraAngle -= 180 * dt
+		ps.camFollowAngle = false
 	}
+
+	//Сдвинули камеру
+	if ps.camFollowAngle{
+		ps.CameraAngle = -ps.Ship.angle
+	}
+
+	scrOff:=float32(winW*ps.shipBack/100)
+	offset:=V2.InDir(-ps.CameraAngle).Mul(scrOff/ps.CameraScale)
+	ps.CameraCenter = ps.Ship.pos.Add(offset)
 }
 
 func (ps PilotScene) Draw() {
@@ -255,6 +288,6 @@ func (ps PilotScene) Draw() {
 	}
 }
 
-func (ps *PilotScene) showFps(data string){
-	ps.fpsUI.ChangeText("fps: "+data)
+func (ps *PilotScene) showFps(data string) {
+	ps.fpsUI.ChangeText("fps: " + data)
 }

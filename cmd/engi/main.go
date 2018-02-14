@@ -7,7 +7,6 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"runtime"
-	"strconv"
 	"time"
 )
 
@@ -35,8 +34,8 @@ func main() {
 
 	ControlHandler := control.NewControlHandler(Joystick)
 
-	NaviScene := NewNaviCosmosScene(renderer, ControlHandler)
-	NaviScene.Init()
+	EngiScene := NewEngiScene(renderer, ControlHandler)
+	EngiScene.Init()
 
 	//Проверочный показывать фпс, он же заглушка на систему каналов
 	initFPS := fps.InitStruct{
@@ -61,7 +60,7 @@ func main() {
 	NetTick := time.Tick(20 * time.Millisecond)
 
 	//считаем сами для показа
-	lastFrame := 0
+//	lastFrame := 0
 loop:
 	for {
 		select {
@@ -72,8 +71,8 @@ loop:
 		case <-ShowFpsTick:
 			fpsControl <- fps.FpsData{graphFrameN, physFrameN, ioFrameN, netFrameN,
 				maxDt, maxGraphT, maxPhysT}
-			NaviScene.showFps(strconv.Itoa((graphFrameN - lastFrame) * 1000 / DEFVAL.FPS_UPDATE_MS))
-			lastFrame = graphFrameN
+//			NaviScene.showFps(strconv.Itoa((graphFrameN - lastFrame) * 1000 / DEFVAL.FPS_UPDATE_MS))
+//			lastFrame = graphFrameN
 			maxDt = 0.0
 			maxGraphT = 0.0
 			maxPhysT = 0.0
@@ -82,9 +81,6 @@ loop:
 		case <-fps.PTick:
 			//МЫ ВЕДОМЫЕ, пока не олучили первое ненулевое значение из вне -- не трогаемся.
 			//это же флаг паузы показа
-			if NaviScene.NetSyncTime == 0 {
-				continue
-			}
 			deltaTime := float32(time.Since(lastPhysFrame).Seconds())
 			if deltaTime > maxDt {
 				maxDt = deltaTime
@@ -92,9 +88,8 @@ loop:
 			lastPhysFrame = time.Now()
 			physFrameN++
 
-			NaviScene.NetSyncTime += deltaTime
 			ControlHandler.BeforeUpdate()
-			NaviScene.Update(deltaTime)
+			EngiScene.Update(deltaTime)
 			T := float32(time.Since(lastPhysFrame).Seconds())
 			if T > maxPhysT {
 				maxPhysT = T
@@ -103,13 +98,10 @@ loop:
 			select {
 			//ПРИОРИТЕТ 2: тик ГРАФИЧЕСКОГО движка
 			case <-fps.GTick:
-				if NaviScene.NetSyncTime == 0 {
-					continue
-				}
 				graphFrameN++
 				start := time.Now()
 				renderer.Clear()
-				NaviScene.Draw()
+				EngiScene.Draw()
 				renderer.Present()
 				T := float32(time.Since(start).Seconds())
 				if T > maxGraphT {
@@ -119,18 +111,18 @@ loop:
 				//ПРИОРИТЕТ 3: снятие состояния УПРАВЛЕНИЯ
 			case <-IOTick:
 				ioFrameN++
-				DoMainLoopIO(breakMainLoop, ControlHandler, NaviScene)
+				DoMainLoopIO(breakMainLoop, ControlHandler, EngiScene)
 				//ПРИОРИТЕТ 3: обновление состояния СЕТИ
 			case <-NetTick:
 				netFrameN++
-				DoMainLoopNet(NaviScene)
+				DoMainLoopNet(EngiScene)
 			}
 		}
 
 	}
 }
 
-func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler, NaviScene *NaviCosmosScene) {
+func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler, EngiScene *EngiScene) {
 	//Проверяем и хэндлим события СДЛ. Выход -- обязательно, а то не закроется
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch ev := event.(type) {
@@ -150,10 +142,10 @@ func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler, NaviScene *
 	handler.IOUpdate()
 	//По сути обрабатываем OnClick одним обработчиком Сцены
 	clicks := handler.TakeMouseClicks()
-	NaviScene.UpdateClicks(clicks)
+	EngiScene.UpdateClicks(clicks)
 }
 
-func DoMainLoopNet(scene *NaviCosmosScene) {
+func DoMainLoopNet(scene *EngiScene) {
 loop:
 	for {
 		//Слушаем пока канал готов сразу отдать
@@ -168,46 +160,33 @@ loop:
 		cmd, param := MNT.SplitMsg(msg)
 		if cmd == MNT.IN_MSG {
 			msgtype, param := MNT.SplitMsg(param)
+			_ = param
 			switch msgtype {
-			case MNT.SHIP_POS:
-				data, err := MNT.DecodeShipPos(param)
-				if err != nil {
-					log.Panicln(err)
-				}
-				ProcShipData(scene, data)
-			case MNT.SESSION_TIME:
-				t, err := strconv.ParseFloat(param, 32)
-				if err != nil {
-					log.Panicln(err)
-				}
-				scene.NetSyncTime = float32(t)
+			/*
+
+		case MNT.SHIP_POS:
+			data, err := MNT.DecodeShipPos(param)
+			if err != nil {
+				log.Panicln(err)
+			}
+			ProcShipData(scene, data)
+		case MNT.SESSION_TIME:
+			t, err := strconv.ParseFloat(param, 32)
+			if err != nil {
+				log.Panicln(err)
+			}
+			scene.NetSyncTime = float32(t)
+			}
+		*/
 			}
 		}
 	}
 }
 
-func ProcShipData(scene *NaviCosmosScene, data *MNT.ShipPosData) {
-	scene.ship.pos = data.Pos
-	scene.ship.speed = data.Speed
-	scene.ship.angle = data.Angle
-	scene.ship.angleSpeed = data.AngleSpeed
-	if scene.camFollowShip {
-		scene.CameraCenter = scene.ship.pos
-	}
-}
 
 func timeCheck(caption string) func() {
 	Start := time.Now()
 	return func() {
 		log.Println(caption, time.Since(Start).Seconds()*1000000, "micro s")
-	}
-}
-
-func Clamp(v *float32, min, max float32) {
-	if *v < min {
-		*v = min
-	}
-	if *v > max {
-		*v = max
 	}
 }

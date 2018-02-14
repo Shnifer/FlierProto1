@@ -19,7 +19,7 @@ type CogitatorOutput struct {
 }
 
 type ShipStats struct {
-	angle, angleSpeed, maxAngMomentum, mainThrust float32
+	angle, angleSpeed, maxAngMomentum, mainThrust,camAngle float32
 }
 
 //В массштабе ввода: нажатая кнопка -1,1, ось - (-1,+1)
@@ -62,6 +62,7 @@ func (c *Cogitator) GetShipStates(ship *PlayerShipGameObject) {
 	c.Stats.angleSpeed = ship.angleSpeed
 	c.Stats.maxAngMomentum = ship.maxAngMomentum
 	c.Stats.mainThrust = ship.mainThrust
+	c.Stats.camAngle = ship.scene.CameraAngle
 }
 
 //Разбираем управление, Здесь же перемапливаем клавиши разных джойстиков
@@ -132,10 +133,10 @@ func (c *Cogitator) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 		angColor = Green
 	}
 
-	wantedAng := psTrigon(center, c.wantedAngle, CompassR+5, CompassR+25, 20)
+	wantedAng := psTrigon(center, c.wantedAngle+c.Stats.camAngle, CompassR+5, CompassR+25, 20)
 	req2 := scene.NewRenderDrawLinesReq(wantedAng, angColor, scene.Z_HUD)
 
-	currentAng := psTrigon(center, c.Stats.angle, CompassR-5, CompassR-25, 20)
+	currentAng := psTrigon(center, c.Stats.angle+c.Stats.camAngle, CompassR-5, CompassR-25, 20)
 	req3 := scene.NewRenderDrawLinesReq(currentAng, angColor, scene.Z_HUD)
 
 	thrColor := Yellow

@@ -33,5 +33,6 @@
   "MainEngineParticlesMaxIntense":100,
   "StarRotationSpeed":10,
   "CameraMinScale":1,
-  "CameraMaxScale":10
+  "CameraMaxScale":10,
+  "ShipShowBotOffset":30
 }

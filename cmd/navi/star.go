@@ -79,8 +79,8 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 		req := scene.NewRenderReq(s.tex, nil, camRect, scene.Z_GAME_OBJECT, float64(s.visZRot), nil, sdl.FLIP_NONE)
 		res = append(res, req)
 		//UI
-		s.nameUI.X,s.nameUI.Y = s.scene.CameraTransformV2(s.Pos)
-		reqUI:=s.nameUI.Draw(r)
+		s.nameUI.X, s.nameUI.Y = s.scene.CameraTransformV2(s.Pos)
+		reqUI := s.nameUI.Draw(r)
 		res = append(res, reqUI...)
 	}
 	return res
@@ -89,7 +89,6 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 func (star *StarGameObject) Init(sc *scene.Scene) {
 	star.scene = sc
 	star.tex = texture.Cache.GetTexture(star.TexName)
-
 
 	f := texture.Cache.GetFont("furore.otf", 9)
 	star.nameUI = scene.NewTextUI(star.ID, f, sdl.Color{200, 255, 255, 200}, scene.Z_ABOVE_OBJECT, scene.FROM_CENTER)

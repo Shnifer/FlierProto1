@@ -74,9 +74,9 @@ func (r RenderFilledPieReq) GetZ() ZLayer {
 }
 
 type RenderRectsReq struct {
-	rects	[]sdl.Rect
-	color      sdl.Color
-	z          ZLayer
+	rects []sdl.Rect
+	color sdl.Color
+	z     ZLayer
 }
 
 func (r RenderRectsReq) GetZ() ZLayer {
@@ -115,7 +115,6 @@ func NewRenderDrawLinesReq(points []sdl.Point, color sdl.Color, z ZLayer) Render
 	}
 }
 
-
 func NewFilledCircleReq(x, y, rad int32, color sdl.Color, z ZLayer) RenderFilledCircleReq {
 	return RenderFilledCircleReq{
 		x:     x,
@@ -139,18 +138,18 @@ func NewFilledPieReq(x, y, rad, inrad, start, end int32, color sdl.Color, z ZLay
 	}
 }
 
-func NewRectsReq(rects []sdl.Rect, color sdl.Color, z ZLayer) RenderRectsReq{
+func NewRectsReq(rects []sdl.Rect, color sdl.Color, z ZLayer) RenderRectsReq {
 	return RenderRectsReq{
-		rects:rects,
-		color:color,
-		z:z,
+		rects: rects,
+		color: color,
+		z:     z,
 	}
 }
-func NewRectReq(rect sdl.Rect, color sdl.Color, z ZLayer) RenderRectsReq{
+func NewRectReq(rect sdl.Rect, color sdl.Color, z ZLayer) RenderRectsReq {
 	return RenderRectsReq{
-		rects:[]sdl.Rect{rect},
-		color:color,
-		z:z,
+		rects: []sdl.Rect{rect},
+		color: color,
+		z:     z,
 	}
 }
 

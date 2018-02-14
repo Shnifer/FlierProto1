@@ -15,7 +15,7 @@ type StarGameObject struct {
 	scene *scene.Scene
 	tex   *sdl.Texture
 
-	visZrot    float32
+	visZrot float32
 	//const фиксируем при загрузке галактики и используем для синхронизации по глобальному времени
 	startAngle float32
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 	"log"
 	"runtime"
-	"time"
 	"strconv"
+	"time"
 )
 
 //Константы экрана
@@ -63,7 +63,7 @@ func main() {
 	NetTick := time.Tick(20 * time.Millisecond)
 
 	//считаем сами для показа
-	lastFrame:=0
+	lastFrame := 0
 loop:
 	for {
 		select {
@@ -74,7 +74,7 @@ loop:
 		case <-ShowFpsTick:
 			fpsControl <- fps.FpsData{graphFrameN, physFrameN, ioFrameN, netFrameN,
 				maxDt, maxGraphT, maxPhysT}
-			PilotScene.showFps(strconv.Itoa((graphFrameN-lastFrame)*1000/DEFVAL.FPS_UPDATE_MS ))
+			PilotScene.showFps(strconv.Itoa((graphFrameN - lastFrame) * 1000 / DEFVAL.FPS_UPDATE_MS))
 			lastFrame = graphFrameN
 			maxDt = 0.0
 			maxGraphT = 0.0
