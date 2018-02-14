@@ -167,7 +167,7 @@ func LoadGalaxyFromFile() {
 				Color:    v.Color,
 				TexName:  texName,
 			}
-			log.Println("created star", Star)
+			//log.Println("created star", Star)
 			MNT.GalaxyData[n] = &Star
 			n++
 		}

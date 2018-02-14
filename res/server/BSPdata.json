@@ -1,0 +1,10 @@
+{
+  "MaxThrust":30,
+  "MaxMomentum":360,
+  "ScanRange":400,
+  "ScanSpeed":0.33,
+  "FuelStock":200,
+  "LifeStock":100,
+  "TotalMass":1,
+  "FuelMass":0.2
+}

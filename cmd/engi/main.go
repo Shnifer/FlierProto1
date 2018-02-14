@@ -18,6 +18,10 @@ const ResourcePath = "res/"
 
 type GameState byte
 
+//Пока глобальная переменная
+//TODO: Абстрагировать
+var BSP MNT.BaseShipParameters
+
 const (
 	//TODO: Экран перезагрузки
 	state_Login GameState = iota
@@ -60,7 +64,7 @@ func main() {
 	NetTick := time.Tick(20 * time.Millisecond)
 
 	//считаем сами для показа
-//	lastFrame := 0
+	//	lastFrame := 0
 loop:
 	for {
 		select {
@@ -71,8 +75,8 @@ loop:
 		case <-ShowFpsTick:
 			fpsControl <- fps.FpsData{graphFrameN, physFrameN, ioFrameN, netFrameN,
 				maxDt, maxGraphT, maxPhysT}
-//			NaviScene.showFps(strconv.Itoa((graphFrameN - lastFrame) * 1000 / DEFVAL.FPS_UPDATE_MS))
-//			lastFrame = graphFrameN
+			//			NaviScene.showFps(strconv.Itoa((graphFrameN - lastFrame) * 1000 / DEFVAL.FPS_UPDATE_MS))
+			//			lastFrame = graphFrameN
 			maxDt = 0.0
 			maxGraphT = 0.0
 			maxPhysT = 0.0
@@ -164,25 +168,24 @@ loop:
 			switch msgtype {
 			/*
 
-		case MNT.SHIP_POS:
-			data, err := MNT.DecodeShipPos(param)
-			if err != nil {
-				log.Panicln(err)
-			}
-			ProcShipData(scene, data)
-		case MNT.SESSION_TIME:
-			t, err := strconv.ParseFloat(param, 32)
-			if err != nil {
-				log.Panicln(err)
-			}
-			scene.NetSyncTime = float32(t)
-			}
-		*/
+				case MNT.SHIP_POS:
+					data, err := MNT.DecodeShipPos(param)
+					if err != nil {
+						log.Panicln(err)
+					}
+					ProcShipData(scene, data)
+				case MNT.SESSION_TIME:
+					t, err := strconv.ParseFloat(param, 32)
+					if err != nil {
+						log.Panicln(err)
+					}
+					scene.NetSyncTime = float32(t)
+					}
+			*/
 			}
 		}
 	}
 }
-
 
 func timeCheck(caption string) func() {
 	Start := time.Now()

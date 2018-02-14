@@ -23,7 +23,7 @@ type PilotScene struct {
 	showgizmos    bool
 
 	//корабль ниже центра, процент от WinH
-	shipBack int32
+	shipBack       int32
 	camFollowAngle bool
 
 	fpsUI *scene.TextUI
@@ -31,11 +31,11 @@ type PilotScene struct {
 
 func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 	return &PilotScene{
-		Scene:         scene.NewScene(r, ch, winW, winH),
-		gravityCalc3D: DEFVAL.GravityCalc3D,
-		shipBack: DEFVAL.ShipShowBotOffset,
-		camFollowAngle:true,
-		showgizmos:    true,
+		Scene:          scene.NewScene(r, ch, winW, winH),
+		gravityCalc3D:  DEFVAL.GravityCalc3D,
+		shipBack:       DEFVAL.ShipShowBotOffset,
+		camFollowAngle: true,
+		showgizmos:     true,
 	}
 }
 
@@ -50,17 +50,17 @@ func (PilotScene *PilotScene) Init() {
 
 	//TODO: УБРАТЬ РУЧНУЮ НЕБУЛУ
 	var nebula1Points []*StarGameObject
-		//DATA INIT
+	//DATA INIT
 	for _, starData := range MNT.GalaxyData {
 		StarGO := &StarGameObject{Star: starData, startAngle: starData.Angle}
-		if strings.HasPrefix(starData.ID,"asteroid") {
+		if strings.HasPrefix(starData.ID, "asteroid") {
 			nebula1Points = append(nebula1Points, StarGO)
 		}
 		PilotScene.AddObject(StarGO)
 	}
 	log.Println("Stars on scene", len(MNT.GalaxyData))
 
-	Nebula1 := NewNebula("nebula1",nebula1Points,150)
+	Nebula1 := NewNebula("nebula1", nebula1Points, 150)
 	PilotScene.AddObject(Nebula1)
 
 	Ship := NewPlayerShip(Particles)
@@ -137,14 +137,12 @@ func (ps *PilotScene) Update(dt float32) {
 	}
 	//ФИЗИКА - ТРЕНИЕ
 	const kTens = 0.2
-	tensForce:=ps.Ship.speed.Mul(-kTens)
-	neb:=s.GetObjByID("nebula1").(*Nebula)
+	tensForce := ps.Ship.speed.Mul(-kTens)
+	neb := s.GetObjByID("nebula1").(*Nebula)
 	if neb.isInside(ps.Ship.pos) {
-		log.Printf("WE ARE INSIDE A NEBULA!!! Ship speed: %f",ps.Ship.speed.Len())
+		log.Printf("WE ARE INSIDE A NEBULA!!! Ship speed: %f", ps.Ship.speed.Len())
 		ps.Ship.ApplyForce(tensForce)
 	}
-
-
 
 	//ВНЕШНИЕ ПРЯМЫЕ ВОЗДЕЙСТВИЯ НИ КИНЕМАТИКУ КОРАБЛЯ
 	if ps.ControlHandler.GetKey(sdl.SCANCODE_SPACE) {
@@ -185,7 +183,7 @@ func (ps *PilotScene) Update(dt float32) {
 
 	if ps.ControlHandler.WasKey(sdl.SCANCODE_4) {
 		ps.GetObjByID("nebula1").(*Nebula).drawMode =
-			(ps.GetObjByID("nebula1").(*Nebula).drawMode+1)%3
+			(ps.GetObjByID("nebula1").(*Nebula).drawMode + 1) % 3
 		log.Println("Nebula Mod Changed")
 	}
 
@@ -202,12 +200,12 @@ func (ps *PilotScene) Update(dt float32) {
 	}
 
 	//Сдвинули камеру
-	if ps.camFollowAngle{
+	if ps.camFollowAngle {
 		ps.CameraAngle = -ps.Ship.angle
 	}
 
-	scrOff:=float32(winW*ps.shipBack/100)
-	offset:=V2.InDir(-ps.CameraAngle).Mul(scrOff/ps.CameraScale)
+	scrOff := float32(winW * ps.shipBack / 100)
+	offset := V2.InDir(-ps.CameraAngle).Mul(scrOff / ps.CameraScale)
 	ps.CameraCenter = ps.Ship.pos.Add(offset)
 }
 

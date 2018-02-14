@@ -19,7 +19,7 @@ type CogitatorOutput struct {
 }
 
 type ShipStats struct {
-	angle, angleSpeed, maxAngMomentum, mainThrust,camAngle float32
+	angle, angleSpeed, maxAngMomentum, mainThrust, camAngle float32
 }
 
 //В массштабе ввода: нажатая кнопка -1,1, ось - (-1,+1)

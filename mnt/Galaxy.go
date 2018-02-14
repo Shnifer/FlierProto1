@@ -108,4 +108,3 @@ func UploadGalaxy() []string {
 	}
 	return res
 }
-

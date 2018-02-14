@@ -8,6 +8,7 @@ import (
 
 type tDefVals struct {
 	LoadGalaxyFile  string //если не пустой -- загружаем из файла, иначе генерим рандом
+	LoadBSPFile     string //если не пустой -- загружаем из файла, иначе генерим рандом
 	GalaxyRadius    float32
 	NumStars        int
 	Gen_minRadius   float32

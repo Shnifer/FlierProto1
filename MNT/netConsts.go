@@ -13,6 +13,8 @@ const (
 	CMD_STOPCHAT     = "stopChat"
 	SHIP_POS         = "shipPos"
 	SESSION_TIME     = "sessionTime"
+	CMD_GETBSP       = "getBSP"
+	RES_BSP          = "BSP"
 )
 
 const (

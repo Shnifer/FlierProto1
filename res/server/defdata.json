@@ -1,4 +1,5 @@
 {"LoadGalaxyFile":"galaxyPredata.json",
+  "LoadBSPFile":"BSPdata.json",
   "GalaxyRadius":10000,
   "NumStars":100,
   "Gen_minRadius":20,

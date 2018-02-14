@@ -19,6 +19,8 @@ type tDefVals struct {
 	FullScreen             bool
 	WinW, WinH             int32
 	RENDERER_ACCELERATED   bool
+	SSDFontName            string
+	SSDFontSize            int
 }
 
 var DEFVAL tDefVals
@@ -36,6 +38,8 @@ func setDefDef() {
 		WinW:                 1024,
 		WinH:                 768,
 		RENDERER_ACCELERATED: true,
+		SSDFontName:          "furore.otf",
+		SSDFontSize:          14,
 	}
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	MNT "github.com/Shnifer/flierproto1/mnt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net"
@@ -44,6 +45,8 @@ func newRoom() Room {
 	return Room{members: make(map[string]net.Conn)}
 }
 
+var BSPForRoom map[string]*MNT.BaseShipParameters
+
 //ГО СИНГЛ сидит на listener.Accept()
 func ConnAcepter(listener net.Listener, NewConns chan net.Conn) {
 	log.Println("ConnAcepter START")
@@ -70,7 +73,7 @@ func ListenConn(conn net.Conn, inStrs chan inString, DeadConns chan net.Conn) {
 	log.Println("ListenConn #", id, "END")
 }
 
-//ЗАПУСКАЕТ ГОРУТИНУ 1 на СОЕДИНЕНИЕ
+//ЗА7ПУСКАЕТ ГОРУТИНУ 1 на СОЕДИНЕНИЕ
 //и возвращает канал, из которого принимает строки на отправку
 //при закрытии канала выключается
 func newSenderConn(conn net.Conn) chan string {
@@ -115,6 +118,8 @@ func main() {
 		GenerateRandomGalaxy()
 	}
 
+	BSPForRoom = make(map[string]*MNT.BaseShipParameters)
+
 	NextID = CreateGenerator()
 
 	NewConns := make(chan net.Conn, 1)
@@ -156,6 +161,7 @@ func main() {
 				if len(Rooms[room].members) == 0 {
 					//no empty rooms
 					delete(Rooms, room)
+					delete(BSPForRoom, room)
 				}
 				//Закрываем канал рассылки и этим горутину
 				close(OutSender[conn])
@@ -200,6 +206,7 @@ func main() {
 					//Если новая комната - добаляем
 					room = newRoom()
 					Rooms[reqRoom] = room
+					BSPForRoom[reqRoom] = LoadBSPFromFile(reqRoom)
 				}
 				room.members[reqRole] = sender
 
@@ -224,14 +231,14 @@ func main() {
 				}
 				log.Println("command ", command)
 
-				HandleCommand(Rooms[room], sender, role, command, param, OutSender[sender])
+				HandleCommand(Rooms[room], sender, profile, command, param, OutSender[sender])
 			}
 		}
 	}
 }
 
 //Комната, соединение и роль отправителя уже разобраны. входящая Команда, параметры и канал ответа оправителю
-func HandleCommand(Room Room, sender net.Conn, role string, command, params string, out chan string) {
+func HandleCommand(Room Room, sender net.Conn, profile Profile, command, params string, out chan string) {
 	switch command {
 	case MNT.CMD_BROADCAST:
 		if len(params) < 2 {
@@ -240,7 +247,7 @@ func HandleCommand(Room Room, sender net.Conn, role string, command, params stri
 		for destRole, destConn := range Room.members {
 			msg := params
 			//не шлём себе
-			if destRole != role {
+			if destRole != profile.Role {
 				//Не шлём тем, кто ещё в командном режиме и не готов слушать
 				if Profiles[destConn].rdyForChat {
 					OutSender[destConn] <- MNT.IN_MSG + " " + msg
@@ -263,8 +270,26 @@ func HandleCommand(Room Room, sender net.Conn, role string, command, params stri
 		newprof := Profiles[sender]
 		newprof.rdyForChat = false
 		Profiles[sender] = newprof
+	case MNT.CMD_GETBSP:
+		out <- MNT.RES_BSP + " " + string(BSPForRoom[profile.Room].Encode())
 	default:
 		log.Println("UNKNOWN COMMAND")
 		out <- MNT.ERR_UNKNOWNCMD
 	}
+}
+
+func LoadBSPFromFile(room string) *MNT.BaseShipParameters {
+	//TODO: Сейчас для всех караблей читаем один и тот же файл, должны получать с инженерки или из БД
+	var samplData MNT.BaseShipParameters
+	exBuf := samplData.Encode()
+	if err := ioutil.WriteFile(serverDataPath+"example_"+DEFVAL.LoadBSPFile, exBuf, 0); err != nil {
+		log.Panicln("LoadBSPFromFile: can't write even example for you! ", err)
+	}
+	bsp := new(MNT.BaseShipParameters)
+	buf, err := ioutil.ReadFile(serverDataPath + DEFVAL.LoadBSPFile)
+	if err != nil {
+		log.Panicln("LoadBSPFromFile: can't read BSP for you! ", err)
+	}
+	bsp.Decode(buf)
+	return bsp
 }

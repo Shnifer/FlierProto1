@@ -24,6 +24,8 @@ type TextUI struct {
 
 	Z ZLayer
 
+	id string
+
 	//Флаг что текстуру нужно пересобрать перед отрисовкой
 	needReworkTex bool
 
@@ -43,13 +45,16 @@ func NewTextUI(text string, font *ttf.Font, color sdl.Color, z ZLayer, fromCente
 	}
 }
 func (t *TextUI) reworkTex() {
+	t.needReworkTex = false
 	if t.tex != nil {
 		t.tex.Destroy()
+	}
+	if t.text == "" {
+		return
 	}
 	t.tex, t.tex_w, t.tex_h = texture.CreateTextTex(t.scene.R, t.text, t.font, t.color)
 	t.tex.SetBlendMode(sdl.BLENDMODE_BLEND)
 	t.tex.SetAlphaMod(t.color.A)
-	t.needReworkTex = false
 }
 
 func (t *TextUI) ChangeFont(font *ttf.Font, color sdl.Color) {
@@ -110,5 +115,16 @@ func (t *TextUI) Draw(r *sdl.Renderer) (res RenderReqList) {
 }
 
 func (t TextUI) GetID() string {
-	return ""
+	return t.id
+}
+
+func (t *TextUI) SetID(newID string) {
+	if t.scene != nil {
+		log.Panicln("SetID already on scene!")
+	}
+	t.id = newID
+}
+
+func (t *TextUI) TexSize() (w, h int32) {
+	return t.tex_h, t.tex_w
 }

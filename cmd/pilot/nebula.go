@@ -62,8 +62,8 @@ type Nebula struct {
 
 	id string
 
-	scene    *scene.Scene
-	tex      *sdl.Texture
+	scene     *scene.Scene
+	tex       *sdl.Texture
 	smokeTexs []*sdl.Texture
 }
 
@@ -77,11 +77,11 @@ func NewNebula(id string, stars []*StarGameObject, w float32) *Nebula {
 
 func (n *Nebula) Init(s *scene.Scene) {
 	n.scene = s
-	n.smokeTexs = make([]*sdl.Texture,3)
+	n.smokeTexs = make([]*sdl.Texture, 3)
 	n.smokeTexs[0] = texture.Cache.GetTexture("smoke1.png")
 	n.smokeTexs[1] = texture.Cache.GetTexture("smoke2.png")
 	n.smokeTexs[2] = texture.Cache.GetTexture("smoke3.png")
-	for _,tex:=range n.smokeTexs{
+	for _, tex := range n.smokeTexs {
 		tex.SetAlphaMod(60)
 	}
 	//	n.smokeTexs[3] = texture.Cache.GetTexture("smoke.png")
@@ -107,7 +107,7 @@ func (n Nebula) isInsideSum(point V2.V2) (bool, float32) {
 	for _, base := range n.base {
 		sum += base.calcW(point)
 	}
-	return sum>n.totalW, sum
+	return sum > n.totalW, sum
 }
 
 func (n *Nebula) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
@@ -116,12 +116,14 @@ func (n *Nebula) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 	//ДРУГИМ ПУТЁМ
 	switch n.drawMode {
-	case 0: {
+	case 0:
+		{
 			return res
-	}
-	case 1: {
-		return n.SmokedDraw(r)
-	}
+		}
+	case 1:
+		{
+			return n.SmokedDraw(r)
+		}
 	}
 
 	totalRect, pixels := n.calcPixels()
@@ -268,12 +270,12 @@ func (n *Nebula) SmokedDraw(r *sdl.Renderer) (res scene.RenderReqList) {
 	//tX, tY := total.X, total.Y //угол total в экранных координатах
 	const maxInTimeN = 3
 	wcontrol := make(chan bool, maxInTimeN)
-	reschan:=make(chan scene.RenderReqList,len(bases))
+	reschan := make(chan scene.RenderReqList, len(bases))
 	for baseInd, base := range bases {
 		wg.Add(1)
 		go func(baseInd int, base sdl.Rect) {
 			wcontrol <- true
-			chanResult :=make(scene.RenderReqList,0)
+			chanResult := make(scene.RenderReqList, 0)
 			//======
 			//garantR2 := n.base[baseIndNebulaInd[baseInd]].garantR2(n.totalW)
 			//bpoint := n.base[baseIndNebulaInd[baseInd]].Pos()
@@ -290,12 +292,12 @@ func (n *Nebula) SmokedDraw(r *sdl.Renderer) (res scene.RenderReqList) {
 			//bX, bY := base.X-tX, base.Y-tY //угол base относительно начала total для расчёта индекса
 			const dotStep = 30
 			const halfDraw = 30
-			bx:=((base.X-1)/dotStep+1)*dotStep-base.X
-			by:=((base.Y-1)/dotStep+1)*dotStep-base.Y
+			bx := ((base.X-1)/dotStep+1)*dotStep - base.X
+			by := ((base.Y-1)/dotStep+1)*dotStep - base.Y
 
-			for y := by; y < base.W; y+=dotStep {
+			for y := by; y < base.W; y += dotStep {
 			loop:
-				for x := bx; x < base.H; x+= dotStep{
+				for x := bx; x < base.H; x += dotStep {
 					//Вдруг точка есть в более ранних прямоугольниках?
 					aX, aY := x+base.X, y+base.Y //координаты точки в экранных координатах
 					//isMoreRects := false
@@ -317,37 +319,36 @@ func (n *Nebula) SmokedDraw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 					point := n.scene.CameraScrTransformV2(aX, aY)
 					//D2 := (point.X-bpoint.X)*(point.X-bpoint.X) + (point.Y-bpoint.Y)*(point.Y-bpoint.Y)
-					draw,sum := n.isInsideSum(point)
-					sizeK:=(sum-n.totalW) / n.totalW
-					if sizeK>2 {
-						sizeK=2
+					draw, sum := n.isInsideSum(point)
+					sizeK := (sum - n.totalW) / n.totalW
+					if sizeK > 2 {
+						sizeK = 2
 					}
 
 					if draw {
-						smokeInd := int(aX/dotStep+aY/dotStep)%len(n.smokeTexs)
-						if smokeInd<0 {
+						smokeInd := int(aX/dotStep+aY/dotStep) % len(n.smokeTexs)
+						if smokeInd < 0 {
 							smokeInd = -smokeInd
 						}
-						smokeTex:=n.smokeTexs[smokeInd]
-						size:=int32(halfDraw*sizeK)
-						camrect:=sdl.Rect{aX- size, aY- size, 2* size, 2* size}
-						req:= scene.NewRenderReqSimple(smokeTex,nil,&camrect,scene.Z_UNDER_OBJECT+scene.ZLayer(baseInd%10))
+						smokeTex := n.smokeTexs[smokeInd]
+						size := int32(halfDraw * sizeK)
+						camrect := sdl.Rect{aX - size, aY - size, 2 * size, 2 * size}
+						req := scene.NewRenderReqSimple(smokeTex, nil, &camrect, scene.Z_UNDER_OBJECT+scene.ZLayer(baseInd%10))
 						chanResult = append(chanResult, req)
 					}
 				}
 			}
 			//======
-			reschan<-chanResult
+			reschan <- chanResult
 			<-wcontrol
 			wg.Done()
 		}(baseInd, base)
 	}
 	wg.Wait()
 	for range bases {
-		chanResult:=<-reschan
-		res = append(res,chanResult...)
+		chanResult := <-reschan
+		res = append(res, chanResult...)
 	}
-
 
 	return res
 }
