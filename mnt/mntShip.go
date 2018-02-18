@@ -59,7 +59,7 @@ type ShipSystemsState struct {
 func NewShipSystemsState() *ShipSystemsState {
 	res := ShipSystemsState{}
 	for i := range res.Systems {
-		//TODO: вернуть 1, текущая формула - для проверки
+		//TODO: вернуть res.Systems[i]=1, текущая формула - для проверки
 		res.Systems[i] = 0.1*float32(i)+0.1
 	}
 	return &res
