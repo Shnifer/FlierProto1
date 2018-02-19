@@ -27,8 +27,8 @@ func NewPlayerShip(ps *ParticleSystem) *PlayerShipGameObject {
 	ship := newShip(ps)
 	res := &PlayerShipGameObject{
 		ShipGameObject: *ship,
-		maxThrustForce: DEFVAL.ShipMaxThrustForce,
-		maxAngMomentum: DEFVAL.ShipMaxAngMomentum,
+		maxThrustForce: BSP.MaxThrust,
+		maxAngMomentum: BSP.MaxMomentum,
 		thrustAxel:     DEFVAL.ShipThrustAxel,
 		angAxel:        DEFVAL.ShipAngAxel,
 		Cogitator:      &Cogitator{},

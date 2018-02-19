@@ -1,6 +1,7 @@
 package mnt
 
 const (
+	CMD_LOGIN        = "login"
 	CMD_BROADCAST    = "broadcast"
 	CMD_CHECKROOM    = "checkRoom"
 	IN_MSG           = "msg"
@@ -15,6 +16,7 @@ const (
 	SESSION_TIME     = "sessionTime"
 	CMD_GETBSP       = "getBSP"
 	RES_BSP          = "BSP"
+	UPD_SSS          = "updSSS"
 )
 
 const (

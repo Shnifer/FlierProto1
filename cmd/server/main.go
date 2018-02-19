@@ -172,21 +172,25 @@ func main() {
 			}
 
 		case inMsg := <-inStrs:
-			log.Println("inStrs", inMsg, "come")
 			sender := inMsg.sender
 			profile, ok := Profiles[sender]
 			//Ещё не зарегистрирован, т.е. это должна быть строка логина
 			if !ok {
-				params := strings.SplitN(inMsg.text, " ", 3)
-				if len(params) < 2 {
+				params := strings.SplitN(inMsg.text, " ", 4)
+				if params[0] != MNT.CMD_LOGIN {
+					log.Println("Conn", sender, " instead of login send:", inMsg.text)
+					DeadConns <- sender
+					continue
+				}
+				if len(params) < 3 {
 					//Хуйская строка пропускаем
 					log.Println("Conn", sender, " incorrect login:", inMsg.text)
 					DeadConns <- sender
 					continue
 				}
 
-				reqRoom := params[0]
-				reqRole := params[1]
+				reqRoom := params[1]
+				reqRole := params[2]
 
 				if room, ok := Rooms[reqRoom]; ok {
 					if occ, ok := room.members[reqRole]; ok {
@@ -200,7 +204,7 @@ func main() {
 				log.Println("Conn", sender, " SUCCESS login as", reqRole, "in", reqRoom)
 
 				//CHECK IN
-				Profiles[inMsg.sender] = Profile{Room: params[0], Role: params[1]}
+				Profiles[inMsg.sender] = Profile{Room: reqRoom, Role: reqRole}
 				room, ok := Rooms[reqRoom]
 				if !ok {
 					//Если новая комната - добаляем

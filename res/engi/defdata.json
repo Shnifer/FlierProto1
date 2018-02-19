@@ -1,12 +1,12 @@
 {"ServerName":"localhost",
-  "MIN_FRAME_MS":15,
-  "MIN_PHYS_MS":10,
+  "MIN_FRAME_MS":25,
+  "MIN_PHYS_MS":20,
   "MAX_FRAME_MS":30,
   "MAX_PHYS_MS":20,
   "TickerBalancerOverhead":2,
   "FPS_UPDATE_MS":1000,
   "FullScreen":false,
-  "WinW":1024,
-  "WinH":768,
+  "WinW":640,
+  "WinH":480,
   "RENDERER_ACCELERATED":true
 }

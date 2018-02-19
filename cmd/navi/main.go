@@ -19,6 +19,10 @@ const ResourcePath = "res/"
 
 type GameState byte
 
+//Пока глобальная переменная
+//TODO: Абстрагировать
+var BSP MNT.BaseShipParameters
+
 const (
 	//TODO: Экран перезагрузки
 	state_Login GameState = iota
@@ -166,22 +170,30 @@ loop:
 		}
 
 		cmd, param := MNT.SplitMsg(msg)
-		if cmd == MNT.IN_MSG {
-			msgtype, param := MNT.SplitMsg(param)
-			switch msgtype {
-			case MNT.SHIP_POS:
-				data, err := MNT.DecodeShipPos(param)
-				if err != nil {
-					log.Panicln(err)
-				}
-				ProcShipData(scene, data)
-			case MNT.SESSION_TIME:
-				t, err := strconv.ParseFloat(param, 32)
-				if err != nil {
-					log.Panicln(err)
-				}
-				scene.NetSyncTime = float32(t)
+		ProcMSG(scene, cmd, param)
+	}
+}
+
+func ProcMSG(scene *NaviCosmosScene, cmd, param string) {
+	if cmd == MNT.IN_MSG {
+		msgType, param := MNT.SplitMsg(param)
+		switch msgType {
+		case MNT.SHIP_POS:
+			data, err := MNT.DecodeShipPos(param)
+			if err != nil {
+				log.Panicln(err)
 			}
+			ProcShipData(scene, data)
+		case MNT.SESSION_TIME:
+			t, err := strconv.ParseFloat(param, 32)
+			if err != nil {
+				log.Panicln(err)
+			}
+			scene.NetSyncTime = float32(t)
+		case MNT.UPD_SSS:
+			var SSS MNT.ShipSystemsState
+			SSS.Decode(param)
+			ProcSSS(scene, SSS)
 		}
 	}
 }
@@ -194,6 +206,11 @@ func ProcShipData(scene *NaviCosmosScene, data *MNT.ShipPosData) {
 	if scene.camFollowShip {
 		scene.CameraCenter = scene.ship.pos
 	}
+}
+
+func ProcSSS(scene *NaviCosmosScene, SSS MNT.ShipSystemsState) {
+	scene.ship.maxScanRange = BSP.ScanRange * SSS[MNT.SSonar]
+	scene.ship.ScanSpeed = BSP.ScanSpeed * SSS[MNT.SSonar]
 }
 
 func timeCheck(caption string) func() {

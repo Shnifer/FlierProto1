@@ -41,7 +41,6 @@ func main() {
 	EngiScene := NewEngiScene(renderer, ControlHandler)
 	EngiScene.Init()
 
-	//Проверочный показывать фпс, он же заглушка на систему каналов
 	initFPS := fps.InitStruct{
 		MIN_FRAME_MS:           DEFVAL.MIN_FRAME_MS,
 		MIN_PHYS_MS:            DEFVAL.MIN_PHYS_MS,
@@ -163,28 +162,18 @@ loop:
 
 		cmd, param := MNT.SplitMsg(msg)
 		if cmd == MNT.IN_MSG {
-			msgtype, param := MNT.SplitMsg(param)
-			_ = param
-			switch msgtype {
-			/*
-
-				case MNT.SHIP_POS:
-					data, err := MNT.DecodeShipPos(param)
-					if err != nil {
-						log.Panicln(err)
-					}
-					ProcShipData(scene, data)
-				case MNT.SESSION_TIME:
-					t, err := strconv.ParseFloat(param, 32)
-					if err != nil {
-						log.Panicln(err)
-					}
-					scene.NetSyncTime = float32(t)
-					}
-			*/
-			}
+			msgType, param := MNT.SplitMsg(param)
+			ProcMSG(scene, msgType, param)
 		}
 	}
+
+	//ОТПРАВКА ТЕКУЩЕГО СОСТОЯНИЕ ИНЖЕНЕРНЫХ СИСТЕМ
+	param := scene.SSS.Encode()
+	MNT.SendBroadcast(MNT.UPD_SSS, param)
+}
+
+//Заглушка для общности
+func ProcMSG(scene *EngiScene, cmd, param string) {
 }
 
 func timeCheck(caption string) func() {

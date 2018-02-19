@@ -107,7 +107,7 @@ func (ch *Handler) handleMouseMotionEvent(ev *sdl.MouseMotionEvent) {
 
 func (ch *Handler) handleMouseButtonEvent(ev *sdl.MouseButtonEvent) {
 	ch.mu.Lock()
-	if ev.Button == sdl.BUTTON_LEFT &&
+	if (ev.Button == sdl.BUTTON_LEFT || ev.Button == sdl.BUTTON_RIGHT) &&
 		ev.State == sdl.PRESSED {
 		ch.wasClicked = append(ch.wasClicked, &MouseClick{X: ev.X, Y: ev.Y, But: ev.Button})
 	}

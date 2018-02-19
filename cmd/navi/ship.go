@@ -30,8 +30,8 @@ type ShipGameObject struct {
 func newShip() *ShipGameObject {
 	return &ShipGameObject{
 		fixedSize:    DEFVAL.ShipSize,
-		maxScanRange: DEFVAL.ShipScanRange,
-		ScanSpeed:    DEFVAL.ShipScanSpeed,
+		maxScanRange: BSP.ScanRange,
+		ScanSpeed:    BSP.ScanSpeed,
 	}
 }
 

@@ -99,7 +99,7 @@ func LoginToServer(room, role string) error {
 		return errors.New("No connection established!")
 	}
 
-	res, err := Client.CommandResult(room+" "+role, RES_LOGIN)
+	res, err := Client.CommandResult(CMD_LOGIN+" "+room+" "+role, RES_LOGIN)
 	if err != nil {
 		return err
 	}

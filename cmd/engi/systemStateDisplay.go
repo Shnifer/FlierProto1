@@ -1,10 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Shnifer/flierproto1/scene"
 	"github.com/Shnifer/flierproto1/texture"
 	"github.com/veandco/go-sdl2/sdl"
-	"strconv"
 )
 
 type SystemStateDisplay struct {
@@ -13,22 +13,31 @@ type SystemStateDisplay struct {
 	Rect    sdl.Rect
 
 	getVal func() float32
+	//Если 0 - показываем getVal как процент,
+	//если больше нуля, как долю getVal/baseVal
+	baseVal float32
 }
 
-func NewSystemStateDisplay(Rect sdl.Rect, id string, caption string, getVal func()float32) *SystemStateDisplay {
+func (ssd *SystemStateDisplay) IsClicked(x, y int32) bool {
+	p := sdl.Point{x, y}
+	return p.InRect(&ssd.Rect)
+}
+
+func NewSystemStateDisplay(Rect sdl.Rect, id string, caption string, getVal func() float32, baseVal float32) *SystemStateDisplay {
 	f := texture.Cache.GetFont(DEFVAL.SSDFontName, DEFVAL.SSDFontSize)
 
-	Caption := scene.NewTextUI(caption,f, scene.WHITE, scene.Z_BACKGROUND, scene.FROM_ANGLE)
+	Caption := scene.NewTextUI(caption, f, scene.WHITE, scene.Z_BACKGROUND, scene.FROM_ANGLE)
 	res := SystemStateDisplay{
 		TextUI:  scene.NewTextUI("", f, scene.WHITE, scene.Z_HUD, scene.FROM_CENTER),
 		Rect:    Rect,
 		Caption: Caption,
-		getVal: getVal,
+		getVal:  getVal,
+		baseVal: baseVal,
 	}
 
 	res.Caption.X = res.Rect.X + smallOff
 	res.Caption.Y = res.Rect.Y + smallOff
-	res.Caption.SetID(id+"~caption")
+	res.Caption.SetID(id + "~caption")
 
 	res.TextUI.X = res.Rect.X + res.Rect.W/2
 	res.TextUI.Y = res.Rect.Y + res.Rect.H/2
@@ -52,7 +61,11 @@ func (ssd *SystemStateDisplay) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 	res = append(res, rectreq)
 
 	Val := ssd.getVal()
-	ssd.TextUI.ChangeText(strconv.Itoa(int(Val*100))+"%")
+	if ssd.baseVal == 0 {
+		ssd.TextUI.ChangeText(fmt.Sprintf("%.0f%%", (Val * 100)))
+	} else {
+		ssd.TextUI.ChangeText(fmt.Sprintf("%v%% ( %v / %v )", int(Val/ssd.baseVal*100), Val, ssd.baseVal))
+	}
 	ress := ssd.TextUI.Draw(r)
 	res = append(res, ress...)
 	return res

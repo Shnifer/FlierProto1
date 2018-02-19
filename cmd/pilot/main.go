@@ -21,6 +21,10 @@ const ResourcePath = "res/"
 
 type GameState byte
 
+//Пока глобальная переменная
+//TODO: Абстрагировать
+var BSP MNT.BaseShipParameters
+
 const (
 	//TODO: Экран перезагрузки
 	state_Login GameState = iota
@@ -149,6 +153,24 @@ func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler) {
 }
 
 func DoMainLoopNet(scene *PilotScene) {
+loop:
+	for {
+		//Слушаем пока канал готов сразу отдать
+		var msg string
+		select {
+		case v := <-MNT.Client.Recv:
+			msg = v
+		default:
+			break loop
+		}
+
+		cmd, param := MNT.SplitMsg(msg)
+		if cmd == MNT.IN_MSG {
+			msgType, param := MNT.SplitMsg(param)
+			ProcMSG(scene, msgType, param)
+		}
+	}
+
 	shipData := MNT.ShipPosData{
 		Pos:        scene.Ship.pos,
 		Speed:      scene.Ship.speed,
@@ -158,6 +180,20 @@ func DoMainLoopNet(scene *PilotScene) {
 	params := MNT.EncodeShipPos(shipData)
 	MNT.SendBroadcast(MNT.SHIP_POS, params)
 	MNT.SendBroadcast(MNT.SESSION_TIME, fmt.Sprintf("%f", scene.NetSyncTime))
+}
+
+func ProcMSG(scene *PilotScene, cmd, param string) {
+	switch cmd {
+	case MNT.UPD_SSS:
+		var sss MNT.ShipSystemsState
+		sss.Decode(param)
+		ProcSSS(scene,sss)
+	}
+}
+
+func ProcSSS(scene *PilotScene, SSS MNT.ShipSystemsState) {
+	scene.Ship.maxThrustForce = BSP.MaxThrust*SSS[MNT.SMarch]
+	scene.Ship.maxAngMomentum = BSP.MaxMomentum*SSS[MNT.SManeur]
 }
 
 func timeCheck(caption string) func() {

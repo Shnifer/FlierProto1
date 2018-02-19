@@ -33,36 +33,55 @@ func (sbp *BaseShipParameters) Encode() []byte {
 
 func (sbp *BaseShipParameters) Decode(str []byte) {
 	log.Println(string(str))
-	err:=json.Unmarshal(str, sbp)
-	if err!=nil{
+	err := json.Unmarshal(str, sbp)
+	if err != nil {
 		log.Panicln(err)
 	}
 }
 
+const SystemsCount = 8
 const (
-	SEngine int = iota
-	SScanner
-	SFuel
-	SLife
-	SystemsCount
+	SMarch  = "S_March"
+	SHyper  = "S_Hyper"
+	SManeur = "S_Maneur"
+	SRadar  = "S_Radar"
+	SSonar  = "S_Sonar"
+	SFuel   = "S_Fuel"
+	SLife   = "S_Life"
+	SShield = "S_Shield"
 )
+const (
+	PLifeStock = "P_Lifestock"
+	PFuelStock = "P_Fuelstock"
+)
+const ParamCount = 2
 
-var SName = [SystemsCount]string{"Engine", "Scanner", "Fuel tanks", "Life support"}
+var SNames = [SystemsCount]string{SMarch, SHyper, SManeur, SRadar, SSonar, SFuel, SLife, SShield}
+var StrSName = [SystemsCount]string{"Маршевый двигатель", "Пузырь Алькубьерре", "Маневровые двигатели", "Курсовой радар",
+	"Сонар", "Топливный бак", "Жизнеобеспечение", "Щиты"}
+var PNames = [ParamCount]string{PLifeStock, PFuelStock}
+var StrPName = [ParamCount]string{"Запас кислорода", "Запас топлива"}
+
+func IsSystemName(name string) bool {
+	for _, v := range SNames {
+		if v == name {
+			return true
+		}
+	}
+	return false
+}
 
 //Состояние систем корабля от 0(уничтожена) до 1(штатно)
 //Синхронизируется по сети
-type ShipSystemsState struct {
-	Systems [SystemsCount]float32
-	Mass    float32
-}
+type ShipSystemsState map[string]float32
 
-func NewShipSystemsState() *ShipSystemsState {
-	res := ShipSystemsState{}
-	for i := range res.Systems {
-		//TODO: вернуть res.Systems[i]=1, текущая формула - для проверки
-		res.Systems[i] = 0.1*float32(i)+0.1
+func NewShipSystemsState() ShipSystemsState {
+	res := make(ShipSystemsState)
+	for i, name := range SNames {
+		//TODO: вернуть res[name] = 1, текущая формула - для проверки
+		res[name] = 0.1*float32(i) + 0.1
 	}
-	return &res
+	return res
 }
 
 func (sss *ShipSystemsState) Encode() string {
@@ -74,8 +93,8 @@ func (sss *ShipSystemsState) Encode() string {
 }
 
 func (sss *ShipSystemsState) Decode(str string) {
-	err:=json.Unmarshal([]byte(str), sss)
-	if err!=nil{
+	err := json.Unmarshal([]byte(str), sss)
+	if err != nil {
 		log.Panicln(err)
 	}
 }
@@ -118,6 +137,6 @@ func DownloadShipBaseParameters(sbp *BaseShipParameters) {
 	if err != nil {
 		log.Panicln(err)
 	}
-	_,msg:=SplitMsg(res)
+	_, msg := SplitMsg(res)
 	sbp.Decode([]byte(msg))
 }
