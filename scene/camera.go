@@ -15,12 +15,15 @@ type CameraInterface interface {
 	CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) (camRect *sdl.Rect, inCamera bool)
 	CameraAngle() float32
 	CameraScale() float32
+	CameraCenter() V2.V2
 	SetCameraScale(scale float32)
-	SetCameraAngle(angle float32)}
+	SetCameraAngle(angle float32)
+	SetCameraCenter(center V2.V2)
+	}
 
 type Сamera struct {
 	//ЦентрКамеры в мировых координатах
-	CameraCenter V2.V2
+	cameraCenter V2.V2
 	//Масштаб пикселей/единицу мировых координат,
 	//увеличение текстур там, где это надо
 	cameraScale float32
@@ -68,7 +71,7 @@ func NewF32Sqr(center V2.V2, rad float32) f32Rect {
 
 //Преобразует координаты из реавльного вектора в координаты камеры сцены
 func (cam *Сamera) CameraTransformV2(v V2.V2) (x, y int32) {
-	w := V2.Sub(v, cam.CameraCenter).Rotate(cam.cameraAngle).Mul(cam.cameraScale)
+	w := V2.Sub(v, cam.cameraCenter).Rotate(cam.cameraAngle).Mul(cam.cameraScale)
 	x = cam.camW/2 + int32(w.X)
 	y = cam.camH/2 - int32(w.Y)
 	return
@@ -78,7 +81,7 @@ func (cam *Сamera) CameraTransformV2(v V2.V2) (x, y int32) {
 func (cam *Сamera) CameraScrTransformV2(x, y int32) V2.V2 {
 	x = x - cam.camW/2
 	y = cam.camH/2 - y
-	V := V2.V2{float32(x), float32(y)}.Mul(1 / cam.cameraScale).Rotate(-cam.cameraAngle).Add(cam.CameraCenter)
+	V := V2.V2{float32(x), float32(y)}.Mul(1 / cam.cameraScale).Rotate(-cam.cameraAngle).Add(cam.cameraCenter)
 	return V
 }
 
@@ -150,4 +153,11 @@ func (cam *Сamera) SetCameraScale(scale float32) {
 
 func (cam *Сamera) SetCameraAngle(angle float32) {
 	cam.cameraAngle = angle
+}
+
+func (cam *Сamera) CameraCenter() V2.V2 {
+	return cam.cameraCenter
+}
+func (cam *Сamera) SetCameraCenter(center V2.V2){
+	cam.cameraCenter = center
 }

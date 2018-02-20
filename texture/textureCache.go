@@ -106,6 +106,7 @@ func CreateTextTex(r *sdl.Renderer, text string, font *ttf.Font, color sdl.Color
 	if err != nil {
 		log.Panicln(err)
 	}
+
 	return tex, w, h
 }
 

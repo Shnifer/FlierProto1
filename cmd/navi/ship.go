@@ -16,7 +16,7 @@ type ShipGameObject struct {
 
 	fixedSize int32
 
-	scene *scene.BScene
+	scene scene.Scene
 	tex   *sdl.Texture
 
 	maxScanRange float32
@@ -27,6 +27,12 @@ type ShipGameObject struct {
 	ScanRadTex *sdl.Texture
 }
 
+func (ship *ShipGameObject) Destroy() {
+	//tex из кэша
+	ship.CurScanStar = nil
+	ship.ScanRadTex.Destroy()
+}
+
 func newShip() *ShipGameObject {
 	return &ShipGameObject{
 		fixedSize:    DEFVAL.ShipSize,
@@ -35,12 +41,12 @@ func newShip() *ShipGameObject {
 	}
 }
 
-func (ship *ShipGameObject) Init(scene *scene.BScene) {
+func (ship *ShipGameObject) Init(scene scene.Scene) {
 	transGreen := sdl.Color{0, 200, 0, 100}
 
 	ship.scene = scene
 	ship.tex = texture.Cache.GetTexture("ship.png")
-	ship.ScanRadTex = texture.CreateFilledCirle(scene.r, int32(ship.maxScanRange), transGreen)
+	ship.ScanRadTex = texture.CreateFilledCirle(scene.R(), int32(ship.maxScanRange), transGreen)
 }
 
 func (ship *ShipGameObject) GetID() string {
@@ -76,7 +82,7 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 	if inCamera {
 		req := scene.NewRenderReq(ship.tex, nil, camRect, scene.Z_GAME_OBJECT,
-			-float64(ship.angle+ship.scene.сameraAngle), nil, sdl.FLIP_NONE,nil)
+			-float64(ship.angle+ship.scene.CameraAngle()), nil, sdl.FLIP_NONE,nil)
 		res = append(res, req)
 	}
 
@@ -91,7 +97,7 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 		transYellow := sdl.Color{255, 200, 0, 255}
 
 		x, y := ship.scene.CameraTransformV2(ship.CurScanStar.Pos)
-		inrad := int32(ship.CurScanStar.ColRad*ship.scene.cameraScale) + 3
+		inrad := int32(ship.CurScanStar.ColRad*ship.scene.CameraScale()) + 3
 		rad := inrad + 10
 		req := scene.NewFilledPieReq(x, y, rad, inrad, 0, int32(ship.ScanProgress*360), transYellow, scene.Z_UNDER_OBJECT)
 		res = append(res, req)

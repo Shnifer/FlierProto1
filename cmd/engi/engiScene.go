@@ -17,6 +17,11 @@ type EngiScene struct {
 	SSDs []*SystemStateDisplay
 }
 
+func (es *EngiScene) Destroy()  {
+	es.SSDs = nil
+	es.BScene.Destroy()
+}
+
 func NewEngiScene(r *sdl.Renderer, ch *control.Handler) *EngiScene {
 	return &EngiScene{
 		BScene: scene.NewScene(r, ch, winW, winH),
@@ -67,7 +72,9 @@ func (S *EngiScene) Init() {
 	background := scene.NewStaticImage("engiBackground.jpg", scene.Z_STAT_BACKGROUND)
 	S.AddObject(background)
 
-	S.BScene.Init()
+	for i := range S.Objects {
+		S.Objects[i].Init(S)
+	}
 }
 
 func (S *EngiScene) Update(dt float32) {

@@ -8,6 +8,7 @@ import (
 	"log"
 	"runtime"
 	"time"
+	"github.com/Shnifer/flierproto1/scene"
 )
 
 //Константы экрана
@@ -38,8 +39,9 @@ func main() {
 
 	ControlHandler := control.NewControlHandler(Joystick)
 
-	EngiScene := NewEngiScene(renderer, ControlHandler)
-	EngiScene.Init()
+	var CurScene scene.Scene
+	CurScene = NewEngiScene(renderer, ControlHandler)
+	CurScene.Init()
 
 	initFPS := fps.InitStruct{
 		MIN_FRAME_MS:           DEFVAL.MIN_FRAME_MS,
@@ -92,7 +94,7 @@ loop:
 			physFrameN++
 
 			ControlHandler.BeforeUpdate()
-			EngiScene.Update(deltaTime)
+			CurScene.Update(deltaTime)
 			T := float32(time.Since(lastPhysFrame).Seconds())
 			if T > maxPhysT {
 				maxPhysT = T
@@ -104,7 +106,7 @@ loop:
 				graphFrameN++
 				start := time.Now()
 				renderer.Clear()
-				EngiScene.Draw()
+				CurScene.Draw()
 				renderer.Present()
 				T := float32(time.Since(start).Seconds())
 				if T > maxGraphT {
@@ -114,18 +116,18 @@ loop:
 				//ПРИОРИТЕТ 3: снятие состояния УПРАВЛЕНИЯ
 			case <-IOTick:
 				ioFrameN++
-				DoMainLoopIO(breakMainLoop, ControlHandler, EngiScene)
+				DoMainLoopIO(breakMainLoop, ControlHandler, CurScene)
 				//ПРИОРИТЕТ 3: обновление состояния СЕТИ
 			case <-NetTick:
 				netFrameN++
-				DoMainLoopNet(EngiScene)
+				DoMainLoopNet(CurScene)
 			}
 		}
 
 	}
 }
 
-func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler, EngiScene *EngiScene) {
+func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler, EngiScene scene.Scene) {
 	//Проверяем и хэндлим события СДЛ. Выход -- обязательно, а то не закроется
 	for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 		switch ev := event.(type) {
@@ -148,7 +150,7 @@ func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler, EngiScene *
 	EngiScene.UpdateClicks(clicks)
 }
 
-func DoMainLoopNet(scene *EngiScene) {
+func DoMainLoopNet(scene scene.Scene) {
 loop:
 	for {
 		//Слушаем пока канал готов сразу отдать
@@ -171,12 +173,15 @@ loop:
 	}
 
 	//ОТПРАВКА ТЕКУЩЕГО СОСТОЯНИЕ ИНЖЕНЕРНЫХ СИСТЕМ
-	param := scene.SSS.Encode()
-	MNT.SendBroadcast(MNT.UPD_SSS, param)
+	es, ok:=scene.(*EngiScene)
+	if ok {
+		param := es.SSS.Encode()
+		MNT.SendBroadcast(MNT.UPD_SSS, param)
+	}
 }
 
 //Заглушка для общности
-func ProcMSG(scene *EngiScene, cmd, param string) {
+func ProcMSG(scene scene.Scene, cmd, param string) {
 }
 
 func timeCheck(caption string) func() {

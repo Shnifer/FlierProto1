@@ -36,7 +36,9 @@ type TextUI struct {
 
 func (t *TextUI) Destroy() {
 	//Текстура создаётся динамически, удаляем за собой
-	t.tex.Destroy()
+	if t.tex!= nil {
+		t.tex.Destroy()
+	}
 }
 
 func NewTextUI(text string, font *ttf.Font, color sdl.Color, z ZLayer, fromCenter bool) *TextUI {
@@ -53,6 +55,7 @@ func (t *TextUI) reworkTex() {
 	t.needReworkTex = false
 	if t.tex != nil {
 		t.tex.Destroy()
+		t.tex=nil
 	}
 	if t.text == "" {
 		return
@@ -120,7 +123,7 @@ func (t *TextUI) Draw(r *sdl.Renderer) (res RenderReqList) {
 	return res
 }
 
-func (t TextUI) GetID() string {
+func (t *TextUI) GetID() string {
 	return t.id
 }
 

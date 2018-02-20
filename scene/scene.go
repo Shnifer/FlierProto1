@@ -23,6 +23,7 @@ type Clickable interface {
 type Scene interface{
 	//Основные функции главного цикла
 	Init()
+	AddObject(obj SceneObject)
 	Update(dt float32)
 	Draw()
 	Destroy()
@@ -61,7 +62,8 @@ func (s *BScene) Destroy() {
 	for i:=range s.Objects {
 		s.Objects[i].Destroy()
 	}
-	s.idmap = map[string]SceneObject{}
+	s.Objects = nil
+	s.idmap = nil
 }
 
 func NewScene(r *sdl.Renderer, ch *control.Handler, camW, camH int32) *BScene {

@@ -12,17 +12,22 @@ import (
 
 type StarGameObject struct {
 	*MNT.Star
-	scene *scene.BScene
+	scene scene.Scene
 	tex   *sdl.Texture
 
-	UItex      *sdl.Texture
-	UI_H, UI_W int32
 	visZRot    float32
 
 	//const фиксируем при загрузке галактики и используем для синхронизации по глобальному времени
 	startAngle float32
 
 	nameUI *scene.TextUI
+}
+
+func (star *StarGameObject) Destroy() {
+	//пока не добавляем надпись в список объектов -- сами уничтожаем
+	star.nameUI = nil
+	star.Star = nil
+	//Текстура из кэша
 }
 
 func (star *StarGameObject) IsClicked(x, y int32) bool {
@@ -50,7 +55,7 @@ func (s *StarGameObject) Update(dt float32) {
 		s.Pos = s.Pos.Add(s.Dir.Mul(dt))
 	} else {
 		//спутник
-		s.Angle = s.startAngle + s.OrbSpeed*s.scene.netSyncTime
+		s.Angle = s.startAngle + s.OrbSpeed*s.scene.NetSyncTime()
 		parentObj := s.scene.GetObjByID(s.Parent)
 		if parentObj == nil {
 			log.Panicln("Update of ", s.ID, "cant find the parent", s.Parent)
@@ -82,15 +87,18 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 		s.nameUI.X, s.nameUI.Y = s.scene.CameraTransformV2(s.Pos)
 		reqUI := s.nameUI.Draw(r)
 		res = append(res, reqUI...)
+
 	}
 	return res
 }
 
-func (star *StarGameObject) Init(sc *scene.BScene) {
+func (star *StarGameObject) Init(sc scene.Scene) {
 	star.scene = sc
 	star.tex = texture.Cache.GetTexture(star.TexName)
 
+
 	f := texture.Cache.GetFont("furore.otf", 9)
 	star.nameUI = scene.NewTextUI(star.ID, f, sdl.Color{200, 255, 255, 200}, scene.Z_ABOVE_OBJECT, scene.FROM_CENTER)
+	sc.AddObject(star.nameUI)
 	star.nameUI.Init(sc)
 }

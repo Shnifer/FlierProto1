@@ -134,8 +134,11 @@ func (n *Nebula) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 	if n.tex != nil {
 		n.tex.Destroy()
+		n.tex = nil
 	}
-
+	if totalRect.Empty(){
+		return res
+	}
 	tex, err := texture.PixelsToTexture(n.scene.R(), pixels, int(totalRect.W), int(totalRect.H))
 	if err != nil {
 		log.Panicln(err)

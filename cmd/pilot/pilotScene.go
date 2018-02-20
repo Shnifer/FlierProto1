@@ -213,7 +213,7 @@ func (ps *PilotScene) Update(dt float32) {
 
 	scrOff := float32(winW * ps.shipBack / 100)
 	offset := V2.InDir(-ps.CameraAngle()).Mul(scrOff / ps.CameraScale())
-	ps.CameraCenter = ps.Ship.pos.Add(offset)
+	ps.SetCameraCenter(ps.Ship.pos.Add(offset))
 }
 
 func (ps *PilotScene) Draw() {

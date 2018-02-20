@@ -46,7 +46,7 @@ func NewSystemStateDisplay(Rect sdl.Rect, id string, caption string, getVal func
 	return &res
 }
 
-func (ssd *SystemStateDisplay) Init(s *scene.BScene) {
+func (ssd *SystemStateDisplay) Init(s scene.Scene) {
 	s.AddObject(ssd.Caption)
 	ssd.Caption.Init(s)
 	ssd.TextUI.Init(s)
