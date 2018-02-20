@@ -10,7 +10,7 @@ import (
 )
 
 type EngiScene struct {
-	*scene.Scene
+	*scene.BScene
 	BSP *MNT.BaseShipParameters
 	SSS MNT.ShipSystemsState
 
@@ -19,9 +19,9 @@ type EngiScene struct {
 
 func NewEngiScene(r *sdl.Renderer, ch *control.Handler) *EngiScene {
 	return &EngiScene{
-		Scene: scene.NewScene(r, ch, winW, winH),
-		SSS:   MNT.NewShipSystemsState(),
-		SSDs:  make([]*SystemStateDisplay, 0),
+		BScene: scene.NewScene(r, ch, winW, winH),
+		SSS:    MNT.NewShipSystemsState(),
+		SSDs:   make([]*SystemStateDisplay, 0),
 	}
 }
 
@@ -67,15 +67,15 @@ func (S *EngiScene) Init() {
 	background := scene.NewStaticImage("engiBackground.jpg", scene.Z_STAT_BACKGROUND)
 	S.AddObject(background)
 
-	S.Scene.Init()
+	S.BScene.Init()
 }
 
 func (S *EngiScene) Update(dt float32) {
-	S.Scene.Update(dt)
+	S.BScene.Update(dt)
 }
 
 func (S *EngiScene) Draw() {
-	S.Scene.Draw()
+	S.BScene.Draw()
 }
 
 //Обрабатываем по частоте IOtick~50 в секунду все события кликов мышки

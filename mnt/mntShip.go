@@ -32,7 +32,6 @@ func (sbp *BaseShipParameters) Encode() []byte {
 }
 
 func (sbp *BaseShipParameters) Decode(str []byte) {
-	log.Println(string(str))
 	err := json.Unmarshal(str, sbp)
 	if err != nil {
 		log.Panicln(err)
@@ -77,9 +76,8 @@ type ShipSystemsState map[string]float32
 
 func NewShipSystemsState() ShipSystemsState {
 	res := make(ShipSystemsState)
-	for i, name := range SNames {
-		//TODO: вернуть res[name] = 1, текущая формула - для проверки
-		res[name] = 0.1*float32(i) + 0.1
+	for _, name := range SNames {
+		res[name] = 1
 	}
 	return res
 }

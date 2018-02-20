@@ -29,7 +29,7 @@ type TextUI struct {
 	//Флаг что текстуру нужно пересобрать перед отрисовкой
 	needReworkTex bool
 
-	scene        *Scene
+	scene        *BScene
 	tex          *sdl.Texture
 	tex_w, tex_h int32
 }
@@ -87,7 +87,7 @@ func (t *TextUI) GetTexSize() (tex_w, tex_h int32) {
 	return t.tex_w, t.tex_h
 }
 
-func (t *TextUI) Init(s *Scene) {
+func (t *TextUI) Init(s *BScene) {
 	t.scene = s
 	t.reworkTex()
 }
@@ -109,7 +109,8 @@ func (t *TextUI) Draw(r *sdl.Renderer) (res RenderReqList) {
 		dy = -h / 2
 	}
 
-	req := NewRenderReq(t.tex, nil, &sdl.Rect{t.X + dx, t.Y + dy, w, h}, t.Z, -float64(t.Angle), nil, sdl.FLIP_NONE)
+	req := NewRenderReq(t.tex, nil, &sdl.Rect{t.X + dx, t.Y + dy, w, h}, t.Z, -float64(t.Angle),
+	nil, sdl.FLIP_NONE, &t.color)
 	res = append(res, req)
 	return res
 }

@@ -9,7 +9,7 @@ import (
 
 //Менеджер объектов, группирующий вызовы главного цикла
 type SceneObject interface {
-	Init(s *Scene)
+	Init(s *BScene)
 	Update(dt float32)
 	Draw(r *sdl.Renderer) RenderReqList
 	GetID() string
@@ -18,7 +18,15 @@ type Clickable interface {
 	IsClicked(x, y int32) bool
 }
 
-type Scene struct {
+type Scene interface{
+	Init()
+	SetNetSyncTime(newTime float32)
+	Update(dt float32)
+	Draw()
+	UpdateClicks([]*control.MouseClick)
+}
+
+type BScene struct {
 	//Рендерер запоминаем в сцену, CONST не меняем
 	R              *sdl.Renderer
 	ControlHandler *control.Handler
@@ -34,11 +42,11 @@ type Scene struct {
 	NetSyncTime float32
 }
 
-func NewScene(r *sdl.Renderer, ch *control.Handler, camW, camH int32) *Scene {
-	return &Scene{R: r, Сamera: newCamera(camW, camH, 1), ControlHandler: ch, idmap: make(map[string]SceneObject)}
+func NewScene(r *sdl.Renderer, ch *control.Handler, camW, camH int32) *BScene {
+	return &BScene{R: r, Сamera: newCamera(camW, camH, 1), ControlHandler: ch, idmap: make(map[string]SceneObject)}
 }
 
-func (s *Scene) AddObject(obj SceneObject) {
+func (s *BScene) AddObject(obj SceneObject) {
 	s.Objects = append(s.Objects, obj)
 	id := obj.GetID()
 	if id != "" {
@@ -46,21 +54,21 @@ func (s *Scene) AddObject(obj SceneObject) {
 	}
 }
 
-func (scene *Scene) Init() {
+func (scene *BScene) Init() {
 	for i := range scene.Objects {
 		scene.Objects[i].Init(scene)
 	}
 }
 
 //TODO: Возможно сделать UPDATE в горутинах, проверить на мутексы и отвутсствие вызовов SDL
-func (s *Scene) Update(dt float32) {
+func (s *BScene) Update(dt float32) {
 
 	for i := range s.Objects {
 		s.Objects[i].Update(dt)
 	}
 }
 
-func (s Scene) Draw() {
+func (s BScene) Draw() {
 	//TODO: возможно распараллелить
 	var Reqs RenderReqList
 	for i := range s.Objects {
@@ -74,6 +82,9 @@ func (s Scene) Draw() {
 	for _, v := range Reqs {
 		switch req := v.(type) {
 		case RenderCopyReq:
+			if req.color!=nil {
+				req.tex.SetColorMod(req.color.R, req.color.G, req.color.B)
+			}
 			s.R.CopyEx(req.tex, req.src, req.dest, req.angle, req.pivot, req.flip)
 		case RenderDrawLinesReq:
 			s.R.SetDrawColor(req.color.R, req.color.G, req.color.B, req.color.A)
@@ -95,6 +106,10 @@ func (s Scene) Draw() {
 	}
 }
 
-func (s Scene) GetObjByID(name string) SceneObject {
+func (s BScene) GetObjByID(name string) SceneObject {
 	return s.idmap[name]
+}
+
+func (s *BScene) SetNetSyncTime(newTime float32) {
+	s.NetSyncTime = newTime
 }

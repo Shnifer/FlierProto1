@@ -40,7 +40,7 @@ func (ship *PlayerShipGameObject) GetID() string {
 	return ""
 }
 
-func (ship *PlayerShipGameObject) Init(scene *scene.Scene) {
+func (ship *PlayerShipGameObject) Init(scene *scene.BScene) {
 	ship.ShipGameObject.Init(scene)
 }
 
@@ -111,7 +111,7 @@ func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) scene.RenderReqList {
 				cameraRect, _ = ship.scene.CameraTransformRect(dRect)
 			}
 			req := scene.NewRenderReq(flameTex, flameRect, cameraRect, scene.Z_UNDER_OBJECT,
-				-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL)
+				-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL,nil)
 			res = append(res, req)
 		}
 		if ship.angThrust != 0 {
@@ -134,7 +134,7 @@ func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) scene.RenderReqList {
 				cameraRect, _ = ship.scene.CameraTransformRect(dRect)
 			}
 			req := scene.NewRenderReq(flameTex, flameRect, cameraRect, scene.Z_UNDER_OBJECT,
-				-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL)
+				-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL,nil)
 			res = append(res, req)
 		}
 	}

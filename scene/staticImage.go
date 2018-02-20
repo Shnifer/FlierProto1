@@ -6,7 +6,7 @@ import (
 )
 
 type StaticImage struct {
-	scene   *Scene
+	scene   *BScene
 	texName string
 	Tex     *sdl.Texture
 	ZLayer  ZLayer
@@ -20,7 +20,7 @@ func (si *StaticImage) GetID() string {
 	return ""
 }
 
-func (si *StaticImage) Init(scene *Scene) {
+func (si *StaticImage) Init(scene *BScene) {
 	si.scene = scene
 	si.Tex = texture.Cache.GetTexture(si.texName)
 }

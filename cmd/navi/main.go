@@ -170,31 +170,35 @@ loop:
 		}
 
 		cmd, param := MNT.SplitMsg(msg)
-		ProcMSG(scene, cmd, param)
+		switch cmd{
+		case MNT.IN_MSG:
+			ProcMSG(scene, param)
+		case MNT.RDY_BSP:
+			MNT.DownloadShipBaseParameters(&BSP)
+		}
+
 	}
 }
 
-func ProcMSG(scene *NaviCosmosScene, cmd, param string) {
-	if cmd == MNT.IN_MSG {
-		msgType, param := MNT.SplitMsg(param)
-		switch msgType {
-		case MNT.SHIP_POS:
-			data, err := MNT.DecodeShipPos(param)
-			if err != nil {
-				log.Panicln(err)
-			}
-			ProcShipData(scene, data)
-		case MNT.SESSION_TIME:
-			t, err := strconv.ParseFloat(param, 32)
-			if err != nil {
-				log.Panicln(err)
-			}
-			scene.NetSyncTime = float32(t)
-		case MNT.UPD_SSS:
-			var SSS MNT.ShipSystemsState
-			SSS.Decode(param)
-			ProcSSS(scene, SSS)
+func ProcMSG(scene *NaviCosmosScene, param string) {
+	msgType, param := MNT.SplitMsg(param)
+	switch msgType {
+	case MNT.SHIP_POS:
+		data, err := MNT.DecodeShipPos(param)
+		if err != nil {
+			log.Panicln(err)
 		}
+		ProcShipData(scene, data)
+	case MNT.SESSION_TIME:
+		t, err := strconv.ParseFloat(param, 32)
+		if err != nil {
+			log.Panicln(err)
+		}
+		scene.NetSyncTime = float32(t)
+	case MNT.UPD_SSS:
+		var SSS MNT.ShipSystemsState
+		SSS.Decode(param)
+		ProcSSS(scene, SSS)
 	}
 }
 

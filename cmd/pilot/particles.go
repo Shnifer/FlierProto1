@@ -32,7 +32,7 @@ type ProduceStats struct {
 
 //Частицы могут часто создаваться, поэтому делаем постоянный срез, и управляем чеез поле active
 type ParticleSystem struct {
-	scene    *scene.Scene
+	scene    *scene.BScene
 	maxCount int
 	curCount int
 
@@ -52,7 +52,7 @@ func (ps *ParticleSystem) GetID() string {
 	return ""
 }
 
-func (ps *ParticleSystem) Init(scene *scene.Scene) {
+func (ps *ParticleSystem) Init(scene *scene.BScene) {
 	ps.scene = scene
 }
 

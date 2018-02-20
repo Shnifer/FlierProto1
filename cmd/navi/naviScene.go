@@ -11,7 +11,7 @@ import (
 )
 
 type NaviCosmosScene struct {
-	*scene.Scene
+	*scene.BScene
 	ship          *ShipGameObject
 	GlobalTime    float32
 	camFollowShip bool
@@ -26,7 +26,7 @@ type NaviCosmosScene struct {
 
 func NewNaviCosmosScene(r *sdl.Renderer, ch *control.Handler) *NaviCosmosScene {
 	return &NaviCosmosScene{
-		Scene:         scene.NewScene(r, ch, winW, winH),
+		BScene:        scene.NewScene(r, ch, winW, winH),
 		camFollowShip: true,
 	}
 }
@@ -60,13 +60,13 @@ func (NaviScene *NaviCosmosScene) Init() {
 	NaviScene.AddObject(fpsUI)
 	NaviScene.fpsUI = fpsUI
 
-	NaviScene.Scene.Init()
+	NaviScene.BScene.Init()
 }
 
 func (NaviScene *NaviCosmosScene) Update(dt float32) {
 
 	NaviScene.cameraControlUpdate(dt)
-	NaviScene.Scene.Update(dt)
+	NaviScene.BScene.Update(dt)
 
 	//Обновляем состояние здесь
 	//Возможно вынести SCANER в отдельный объект
@@ -156,10 +156,10 @@ func (s *NaviCosmosScene) UpdateClicks(clicks []*control.MouseClick) {
 }
 
 func (s NaviCosmosScene) Draw() {
-	s.Scene.Draw()
+	s.BScene.Draw()
 
 	if s.scShowTime > 0 {
-		scR, inCamera := s.Scene.CameraRectByCenterAndScreenWH(s.sc_pos, int32(float32(s.sc_w)*s.scShowTime), int32(float32(s.sc_h)*s.scShowTime))
+		scR, inCamera := s.BScene.CameraRectByCenterAndScreenWH(s.sc_pos, int32(float32(s.sc_w)*s.scShowTime), int32(float32(s.sc_h)*s.scShowTime))
 		if inCamera {
 			s.R.Copy(s.scienceTex, nil, scR)
 		}

@@ -12,7 +12,7 @@ import (
 
 type StarGameObject struct {
 	*MNT.Star
-	scene *scene.Scene
+	scene *scene.BScene
 	tex   *sdl.Texture
 
 	visZrot float32
@@ -51,7 +51,6 @@ func (s *StarGameObject) Update(dt float32) {
 }
 
 func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
-	s.tex.SetColorMod(s.Color.R, s.Color.G, s.Color.B)
 	halfsize := s.ColRad
 	rect := scene.NewF32Sqr(s.Pos, halfsize)
 	camRect, inCamera := s.scene.CameraTransformRect(rect)
@@ -59,7 +58,8 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 	if inCamera {
 
-		req := scene.NewRenderReq(s.tex, nil, camRect, scene.Z_GAME_OBJECT, float64(s.visZrot), nil, sdl.FLIP_NONE)
+		req := scene.NewRenderReq(s.tex, nil, camRect, scene.Z_GAME_OBJECT, float64(s.visZrot),
+			nil, sdl.FLIP_NONE, &sdl.Color{s.Color.R,s.Color.G,s.Color.B,255})
 		res = append(res, req)
 		//UI
 
@@ -73,7 +73,7 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 	return res
 }
 
-func (star *StarGameObject) Init(s *scene.Scene) {
+func (star *StarGameObject) Init(s *scene.BScene) {
 	star.scene = s
 	star.tex = texture.Cache.GetTexture(star.TexName)
 }

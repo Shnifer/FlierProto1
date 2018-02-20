@@ -17,7 +17,7 @@ type HugeMass interface {
 }
 
 type PilotScene struct {
-	*scene.Scene
+	*scene.BScene
 	Ship          *PlayerShipGameObject
 	gravityCalc3D bool
 	showgizmos    bool
@@ -31,7 +31,7 @@ type PilotScene struct {
 
 func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 	return &PilotScene{
-		Scene:          scene.NewScene(r, ch, winW, winH),
+		BScene:         scene.NewScene(r, ch, winW, winH),
 		gravityCalc3D:  DEFVAL.GravityCalc3D,
 		shipBack:       DEFVAL.ShipShowBotOffset,
 		camFollowAngle: true,
@@ -87,7 +87,7 @@ func (PilotScene *PilotScene) Init() {
 	PilotScene.AddObject(fpsUI)
 	PilotScene.fpsUI = fpsUI
 
-	PilotScene.Scene.Init()
+	PilotScene.BScene.Init()
 }
 
 //Возвращает силу тяжести, точнее ускорение для заданной массы и заданного пробного положения
@@ -126,7 +126,7 @@ func (ps *PilotScene) Update(dt float32) {
 	Clamp(&ps.CameraScale, min, max)
 
 	//ФИЗИКА - ГРАВИТАЦИЯ
-	s := ps.Scene
+	s := ps.BScene
 	for _, obj := range s.Objects {
 		attractor, ok := obj.(HugeMass)
 		if !ok {
@@ -211,7 +211,7 @@ func (ps *PilotScene) Update(dt float32) {
 
 func (ps PilotScene) Draw() {
 
-	s := ps.Scene
+	s := ps.BScene
 	s.Draw()
 
 	GizmoGravityForceK := DEFVAL.GizmoGravityForceK

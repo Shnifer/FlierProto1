@@ -35,6 +35,7 @@ type RenderCopyReq struct {
 	angle     float64
 	pivot     *sdl.Point
 	flip      sdl.RendererFlip
+	color     *sdl.Color
 }
 
 func (r RenderCopyReq) GetZ() ZLayer {
@@ -83,7 +84,7 @@ func (r RenderRectsReq) GetZ() ZLayer {
 	return r.z
 }
 
-func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64, pivot *sdl.Point, flip sdl.RendererFlip) RenderCopyReq {
+func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64, pivot *sdl.Point, flip sdl.RendererFlip, color *sdl.Color) RenderCopyReq {
 	return RenderCopyReq{
 		tex:   tex,
 		src:   src,
@@ -92,6 +93,7 @@ func NewRenderReq(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer, angle float64
 		angle: angle,
 		pivot: pivot,
 		flip:  flip,
+		color: color,
 	}
 }
 
@@ -104,6 +106,7 @@ func NewRenderReqSimple(tex *sdl.Texture, src, dest *sdl.Rect, z ZLayer) RenderC
 		angle: 0,
 		pivot: nil,
 		flip:  sdl.FLIP_NONE,
+		color: nil,
 	}
 }
 

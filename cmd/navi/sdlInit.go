@@ -88,7 +88,6 @@ func InitSomeShit() (deferMe func(), r *sdl.Renderer, j *sdl.Joystick) {
 	log.Println("login")
 	MNT.LoginToServer(MNT.RoomName, MNT.ROLE_NAVIGATOR)
 	MNT.DownloadGalaxy()
-	MNT.DownloadShipBaseParameters(&BSP)
 	MNT.ReadyForChat()
 	return deferMe, renderer, Joystick
 }

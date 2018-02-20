@@ -12,7 +12,7 @@
   "GravityConst":0.003,
   "GravityDepthSqr":900,
   "GravityCalc3D": true,
-  "StartLocationName":"jupiter",
+  "StartLocationName":"magelan",
   "StartLocationOffset":{"X":300,"Y":300},
   "ShowGizmoGravityForce":true,
   "GizmoGravityForceK":100,

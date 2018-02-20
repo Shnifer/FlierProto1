@@ -161,9 +161,12 @@ loop:
 		}
 
 		cmd, param := MNT.SplitMsg(msg)
-		if cmd == MNT.IN_MSG {
-			msgType, param := MNT.SplitMsg(param)
-			ProcMSG(scene, msgType, param)
+		switch cmd {
+			case MNT.IN_MSG:
+				msgType, param := MNT.SplitMsg(param)
+				ProcMSG(scene, msgType, param)
+			case MNT.RDY_BSP:
+				MNT.DownloadShipBaseParameters(&BSP)
 		}
 	}
 

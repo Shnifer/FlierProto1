@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -39,6 +38,7 @@ type Profile struct {
 
 type Room struct {
 	members map[string]net.Conn
+	shipID string
 }
 
 func newRoom() Room {
@@ -62,18 +62,18 @@ func ConnAcepter(listener net.Listener, NewConns chan net.Conn) {
 
 //ГО 1 на ОТКРЫТОЕ СОЕДИНЕНИЕ сидит на reader.ReadString
 func ListenConn(conn net.Conn, inStrs chan inString, DeadConns chan net.Conn) {
-	id := NextID()
-	log.Println("ListenConn #", id, "START for", conn)
+//	id := NextID()
+//	log.Println("ListenConn #", id, "START for", conn)
 	scaner := bufio.NewScanner(conn)
 	for scaner.Scan() {
 		str := scaner.Text()
 		inStrs <- inString{sender: conn, text: str}
 	}
 	DeadConns <- conn
-	log.Println("ListenConn #", id, "END")
+//	log.Println("ListenConn #", id, "END")
 }
 
-//ЗА7ПУСКАЕТ ГОРУТИНУ 1 на СОЕДИНЕНИЕ
+//ЗАПУСКАЕТ ГОРУТИНУ 1 на СОЕДИНЕНИЕ
 //и возвращает канал, из которого принимает строки на отправку
 //при закрытии канала выключается
 func newSenderConn(conn net.Conn) chan string {
@@ -102,6 +102,7 @@ func newSenderConn(conn net.Conn) chan string {
 
 var OutSender map[net.Conn]chan string
 var Profiles map[net.Conn]Profile
+var Rooms map[string]Room
 
 const serverDataPath = "res/server/"
 
@@ -128,7 +129,7 @@ func main() {
 
 	inStrs := make(chan inString, 1)
 
-	Rooms := make(map[string]Room)
+	Rooms = make(map[string]Room)
 	Profiles = make(map[net.Conn]Profile)
 
 	OutSender = make(map[net.Conn]chan string)
@@ -158,10 +159,11 @@ func main() {
 				role := prof.Role
 				room := prof.Room
 				delete(Rooms[room].members, role)
+
 				if len(Rooms[room].members) == 0 {
 					//no empty rooms
-					delete(Rooms, room)
 					delete(BSPForRoom, room)
+					delete(Rooms, room)
 				}
 				//Закрываем канал рассылки и этим горутину
 				close(OutSender[conn])
@@ -210,7 +212,6 @@ func main() {
 					//Если новая комната - добаляем
 					room = newRoom()
 					Rooms[reqRoom] = room
-					BSPForRoom[reqRoom] = LoadBSPFromFile(reqRoom)
 				}
 				room.members[reqRole] = sender
 
@@ -258,8 +259,10 @@ func HandleCommand(Room Room, sender net.Conn, profile Profile, command, params 
 				}
 			}
 		}
+	/*
 	case MNT.CMD_CHECKROOM:
 		out <- MNT.RES_CHECKROOM + " " + strconv.Itoa(len(Room.members))
+	*/
 
 	case MNT.CMD_GETGALAXY:
 		res := MNT.UploadGalaxy()
@@ -274,6 +277,17 @@ func HandleCommand(Room Room, sender net.Conn, profile Profile, command, params 
 		newprof := Profiles[sender]
 		newprof.rdyForChat = false
 		Profiles[sender] = newprof
+	case MNT.SET_SHIPID:
+		Room.shipID = params
+		Rooms[profile.Room] = Room
+		if Room.shipID == "" {
+			delete(BSPForRoom, profile.Room)
+		} else {
+			BSPForRoom[profile.Room] = LoadBSPFromFile(Room.shipID)
+		}
+		for _, destConn := range Room.members {
+			OutSender[destConn] <- MNT.RDY_BSP
+		}
 	case MNT.CMD_GETBSP:
 		out <- MNT.RES_BSP + " " + string(BSPForRoom[profile.Room].Encode())
 	default:
@@ -282,7 +296,7 @@ func HandleCommand(Room Room, sender net.Conn, profile Profile, command, params 
 	}
 }
 
-func LoadBSPFromFile(room string) *MNT.BaseShipParameters {
+func LoadBSPFromFile(ShipID string) *MNT.BaseShipParameters {
 	//TODO: Сейчас для всех караблей читаем один и тот же файл, должны получать с инженерки или из БД
 	var samplData MNT.BaseShipParameters
 	exBuf := samplData.Encode()

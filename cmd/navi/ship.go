@@ -16,7 +16,7 @@ type ShipGameObject struct {
 
 	fixedSize int32
 
-	scene *scene.Scene
+	scene *scene.BScene
 	tex   *sdl.Texture
 
 	maxScanRange float32
@@ -35,7 +35,7 @@ func newShip() *ShipGameObject {
 	}
 }
 
-func (ship *ShipGameObject) Init(scene *scene.Scene) {
+func (ship *ShipGameObject) Init(scene *scene.BScene) {
 	transGreen := sdl.Color{0, 200, 0, 100}
 
 	ship.scene = scene
@@ -76,7 +76,7 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 	if inCamera {
 		req := scene.NewRenderReq(ship.tex, nil, camRect, scene.Z_GAME_OBJECT,
-			-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_NONE)
+			-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_NONE,nil)
 		res = append(res, req)
 	}
 

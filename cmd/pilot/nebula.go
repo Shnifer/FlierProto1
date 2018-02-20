@@ -62,7 +62,7 @@ type Nebula struct {
 
 	id string
 
-	scene     *scene.Scene
+	scene     *scene.BScene
 	tex       *sdl.Texture
 	smokeTexs []*sdl.Texture
 }
@@ -75,7 +75,7 @@ func NewNebula(id string, stars []*StarGameObject, w float32) *Nebula {
 	return &res
 }
 
-func (n *Nebula) Init(s *scene.Scene) {
+func (n *Nebula) Init(s *scene.BScene) {
 	n.scene = s
 	n.smokeTexs = make([]*sdl.Texture, 3)
 	n.smokeTexs[0] = texture.Cache.GetTexture("smoke1.png")

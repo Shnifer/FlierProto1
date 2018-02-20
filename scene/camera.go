@@ -99,7 +99,7 @@ func (cam Сamera) CameraTransformRect(r f32Rect) (camRect *sdl.Rect, inCamera b
 }
 
 //Экранный прямоугольник для заданной физической координаты центра И ЭКРАННОГО РАЗМЕРА
-func (cam Scene) CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) (camRect *sdl.Rect, inCamera bool) {
+func (cam BScene) CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) (camRect *sdl.Rect, inCamera bool) {
 	x, y := cam.CameraTransformV2(center)
 	res := sdl.Rect{
 		x - halfsize,
@@ -112,7 +112,7 @@ func (cam Scene) CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) (
 	return &res, inCamera
 }
 
-func (cam Scene) CameraRectByCenterAndScreenWH(center V2.V2, W, H int32) (camRect *sdl.Rect, inCamera bool) {
+func (cam BScene) CameraRectByCenterAndScreenWH(center V2.V2, W, H int32) (camRect *sdl.Rect, inCamera bool) {
 	x, y := cam.CameraTransformV2(center)
 	res := sdl.Rect{
 		x - W/2,

@@ -19,18 +19,12 @@ var winH int32
 
 const ResourcePath = "res/"
 
-type GameState byte
 
 //Пока глобальная переменная
 //TODO: Абстрагировать
 var BSP MNT.BaseShipParameters
 
-const (
-	//TODO: Экран перезагрузки
-	state_Login GameState = iota
-	state_PilotSpace
-	state_NaviSpace
-)
+var GameState string
 
 func main() {
 
@@ -68,6 +62,8 @@ func main() {
 
 	//считаем сами для показа
 	lastFrame := 0
+
+	GameState = MNT.STATE_NOSHIP
 loop:
 	for {
 		select {
@@ -165,9 +161,14 @@ loop:
 		}
 
 		cmd, param := MNT.SplitMsg(msg)
-		if cmd == MNT.IN_MSG {
-			msgType, param := MNT.SplitMsg(param)
-			ProcMSG(scene, msgType, param)
+		switch cmd {
+			case MNT.IN_MSG:
+				msgType, param := MNT.SplitMsg(param)
+				ProcMSG(scene, msgType, param)
+			case MNT.RDY_BSP:
+				MNT.DownloadShipBaseParameters(&BSP)
+				ProcSSS(scene, MNT.NewShipSystemsState())
+				log.Println(BSP)
 		}
 	}
 
