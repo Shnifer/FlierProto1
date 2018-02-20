@@ -81,18 +81,18 @@ func (NaviScene *NaviCosmosScene) Update(dt float32) {
 		}
 	}
 	if NaviScene.camFollowShip {
-		NaviScene.CameraCenter = NaviScene.ship.pos
+		NaviScene.cameraCenter = NaviScene.ship.pos
 	}
 }
 
 func (NaviScene *NaviCosmosScene) cameraControlUpdate(dt float32) {
-	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_KP_PLUS) {
-		NaviScene.CameraScale *= (1 + dt)
+	if NaviScene.сontrolHandler.GetKey(sdl.SCANCODE_KP_PLUS) {
+		NaviScene.cameraScale *= (1 + dt)
 	}
-	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_KP_MINUS) {
-		NaviScene.CameraScale *= (1 - dt)
+	if NaviScene.сontrolHandler.GetKey(sdl.SCANCODE_KP_MINUS) {
+		NaviScene.cameraScale *= (1 - dt)
 	}
-	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_SPACE) {
+	if NaviScene.сontrolHandler.GetKey(sdl.SCANCODE_SPACE) {
 		NaviScene.camFollowShip = true
 	}
 
@@ -108,28 +108,28 @@ func (NaviScene *NaviCosmosScene) cameraControlUpdate(dt float32) {
 	} else {
 		max = 1 / max
 	}
-	Clamp(&NaviScene.CameraScale, min, max)
+	Clamp(&NaviScene.cameraScale, min, max)
 
 	ScrollSpeed := DEFVAL.CameraScrollSpeed
 
-	delta := ScrollSpeed * dt / NaviScene.CameraScale
-	newCenter := NaviScene.CameraCenter
+	delta := ScrollSpeed * dt / NaviScene.cameraScale
+	newCenter := NaviScene.cameraCenter
 
-	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_W) {
+	if NaviScene.сontrolHandler.GetKey(sdl.SCANCODE_W) {
 		newCenter = newCenter.AddMul(V2.V2{0, 1}, delta)
 	}
-	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_A) {
+	if NaviScene.сontrolHandler.GetKey(sdl.SCANCODE_A) {
 		newCenter = newCenter.AddMul(V2.V2{-1, 0}, delta)
 	}
-	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_S) {
+	if NaviScene.сontrolHandler.GetKey(sdl.SCANCODE_S) {
 		newCenter = newCenter.AddMul(V2.V2{0, -1}, delta)
 	}
-	if NaviScene.ControlHandler.GetKey(sdl.SCANCODE_D) {
+	if NaviScene.сontrolHandler.GetKey(sdl.SCANCODE_D) {
 		newCenter = newCenter.AddMul(V2.V2{1, 0}, delta)
 	}
-	if newCenter != NaviScene.CameraCenter {
+	if newCenter != NaviScene.cameraCenter {
 		NaviScene.camFollowShip = false
-		NaviScene.CameraCenter = newCenter
+		NaviScene.cameraCenter = newCenter
 	}
 }
 
@@ -161,7 +161,7 @@ func (s NaviCosmosScene) Draw() {
 	if s.scShowTime > 0 {
 		scR, inCamera := s.BScene.CameraRectByCenterAndScreenWH(s.sc_pos, int32(float32(s.sc_w)*s.scShowTime), int32(float32(s.sc_h)*s.scShowTime))
 		if inCamera {
-			s.R.Copy(s.scienceTex, nil, scR)
+			s.r.Copy(s.scienceTex, nil, scR)
 		}
 	}
 
@@ -175,7 +175,7 @@ func (s *NaviCosmosScene) ShowScienceData(star *StarGameObject) {
 	const startShowTime = 2
 
 	f := texture.Cache.GetFont("furore.otf", 36)
-	s.scienceTex, s.sc_w, s.sc_h = texture.CreateTextTex(s.R, "Scanned data: "+star.ID, f, sdl.Color{150, 100, 255, 200})
+	s.scienceTex, s.sc_w, s.sc_h = texture.CreateTextTex(s.r, "Scanned data: "+star.ID, f, sdl.Color{150, 100, 255, 200})
 	s.scShowTime = startShowTime
 	s.sc_pos = star.Pos
 }

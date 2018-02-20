@@ -50,7 +50,7 @@ func (s *StarGameObject) Update(dt float32) {
 		s.Pos = s.Pos.Add(s.Dir.Mul(dt))
 	} else {
 		//спутник
-		s.Angle = s.startAngle + s.OrbSpeed*s.scene.NetSyncTime
+		s.Angle = s.startAngle + s.OrbSpeed*s.scene.netSyncTime
 		parentObj := s.scene.GetObjByID(s.Parent)
 		if parentObj == nil {
 			log.Panicln("Update of ", s.ID, "cant find the parent", s.Parent)

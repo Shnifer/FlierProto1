@@ -62,9 +62,14 @@ type Nebula struct {
 
 	id string
 
-	scene     *scene.BScene
+	scene     scene.Scene
 	tex       *sdl.Texture
 	smokeTexs []*sdl.Texture
+}
+
+func (n *Nebula) Destroy() {
+	n.tex.Destroy()
+	//Текстуры дыма smokeTexs из кэша
 }
 
 func NewNebula(id string, stars []*StarGameObject, w float32) *Nebula {
@@ -75,7 +80,7 @@ func NewNebula(id string, stars []*StarGameObject, w float32) *Nebula {
 	return &res
 }
 
-func (n *Nebula) Init(s *scene.BScene) {
+func (n *Nebula) Init(s scene.Scene) {
 	n.scene = s
 	n.smokeTexs = make([]*sdl.Texture, 3)
 	n.smokeTexs[0] = texture.Cache.GetTexture("smoke1.png")
@@ -88,7 +93,6 @@ func (n *Nebula) Init(s *scene.BScene) {
 }
 
 func (n *Nebula) Update(dt float32) {
-
 }
 
 func (n Nebula) isInside(point V2.V2) bool {
@@ -132,7 +136,7 @@ func (n *Nebula) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 		n.tex.Destroy()
 	}
 
-	tex, err := texture.PixelsToTexture(n.scene.R, pixels, int(totalRect.W), int(totalRect.H))
+	tex, err := texture.PixelsToTexture(n.scene.R(), pixels, int(totalRect.W), int(totalRect.H))
 	if err != nil {
 		log.Panicln(err)
 	}

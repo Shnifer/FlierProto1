@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"time"
+	"github.com/Shnifer/flierproto1/scene"
 )
 
 //Константы экрана
@@ -35,8 +36,10 @@ func main() {
 
 	ControlHandler := control.NewControlHandler(Joystick)
 
-	PilotScene := NewPilotScene(renderer, ControlHandler)
-	PilotScene.Init()
+	var CurScene scene.Scene
+
+	CurScene = NewPilotScene(renderer, ControlHandler)
+	CurScene.Init()
 
 	//Проверочный показывать фпс, он же заглушка на систему каналов
 	initFPS := fps.InitStruct{
@@ -74,7 +77,10 @@ loop:
 		case <-ShowFpsTick:
 			fpsControl <- fps.FpsData{graphFrameN, physFrameN, ioFrameN, netFrameN,
 				maxDt, maxGraphT, maxPhysT}
-			PilotScene.showFps(strconv.Itoa((graphFrameN - lastFrame) * 1000 / DEFVAL.FPS_UPDATE_MS))
+			ps,ok:= CurScene.(*PilotScene)
+			if ok{
+				ps.showFps(strconv.Itoa((graphFrameN - lastFrame) * 1000 / DEFVAL.FPS_UPDATE_MS))
+			}
 			lastFrame = graphFrameN
 			maxDt = 0.0
 			maxGraphT = 0.0
@@ -89,10 +95,8 @@ loop:
 			lastPhysFrame = time.Now()
 			physFrameN++
 
-			PilotScene.NetSyncTime += deltaTime
-
 			ControlHandler.BeforeUpdate()
-			PilotScene.Update(deltaTime)
+			CurScene.Update(deltaTime)
 			T := float32(time.Since(lastPhysFrame).Seconds())
 			if T > maxPhysT {
 				maxPhysT = T
@@ -105,7 +109,7 @@ loop:
 				graphFrameN++
 				start := time.Now()
 				renderer.Clear()
-				PilotScene.Draw()
+				CurScene.Draw()
 				renderer.Present()
 				T := float32(time.Since(start).Seconds())
 				if T > maxGraphT {
@@ -120,7 +124,7 @@ loop:
 			case <-NetTick:
 
 				netFrameN++
-				DoMainLoopNet(PilotScene)
+				DoMainLoopNet(CurScene)
 			default:
 				time.Sleep(100 * time.Microsecond)
 			}
@@ -148,7 +152,7 @@ func DoMainLoopIO(breakMainLoop chan bool, handler *control.Handler) {
 	handler.IOUpdate()
 }
 
-func DoMainLoopNet(scene *PilotScene) {
+func DoMainLoopNet(scene scene.Scene) {
 loop:
 	for {
 		//Слушаем пока канал готов сразу отдать
@@ -172,29 +176,35 @@ loop:
 		}
 	}
 
-	shipData := MNT.ShipPosData{
-		Pos:        scene.Ship.pos,
-		Speed:      scene.Ship.speed,
-		Angle:      scene.Ship.angle,
-		AngleSpeed: scene.Ship.angleSpeed,
+	ps, ok:=scene.(*PilotScene)
+	if ok {
+		shipData := MNT.ShipPosData{
+			Pos:        ps.Ship.pos,
+			Speed:      ps.Ship.speed,
+			Angle:      ps.Ship.angle,
+			AngleSpeed: ps.Ship.angleSpeed,
+		}
+		params := MNT.EncodeShipPos(shipData)
+		MNT.SendBroadcast(MNT.SHIP_POS, params)
+		MNT.SendBroadcast(MNT.SESSION_TIME, fmt.Sprintf("%f", ps.NetSyncTime()))
 	}
-	params := MNT.EncodeShipPos(shipData)
-	MNT.SendBroadcast(MNT.SHIP_POS, params)
-	MNT.SendBroadcast(MNT.SESSION_TIME, fmt.Sprintf("%f", scene.NetSyncTime))
 }
 
-func ProcMSG(scene *PilotScene, cmd, param string) {
+func ProcMSG(scene scene.Scene, cmd, param string) {
 	switch cmd {
 	case MNT.UPD_SSS:
-		var sss MNT.ShipSystemsState
-		sss.Decode(param)
-		ProcSSS(scene,sss)
+			var sss MNT.ShipSystemsState
+			sss.Decode(param)
+			ProcSSS(scene, sss)
 	}
 }
 
-func ProcSSS(scene *PilotScene, SSS MNT.ShipSystemsState) {
-	scene.Ship.maxThrustForce = BSP.MaxThrust*SSS[MNT.SMarch]
-	scene.Ship.maxAngMomentum = BSP.MaxMomentum*SSS[MNT.SManeur]
+func ProcSSS(scene scene.Scene, SSS MNT.ShipSystemsState) {
+	ps, ok:=scene.(*PilotScene)
+	if ok {
+		ps.Ship.maxThrustForce = BSP.MaxThrust * SSS[MNT.SMarch]
+		ps.Ship.maxAngMomentum = BSP.MaxMomentum * SSS[MNT.SManeur]
+	}
 }
 
 func timeCheck(caption string) func() {

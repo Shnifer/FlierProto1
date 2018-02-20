@@ -29,9 +29,14 @@ type TextUI struct {
 	//Флаг что текстуру нужно пересобрать перед отрисовкой
 	needReworkTex bool
 
-	scene        *BScene
+	scene        Scene
 	tex          *sdl.Texture
 	tex_w, tex_h int32
+}
+
+func (t *TextUI) Destroy() {
+	//Текстура создаётся динамически, удаляем за собой
+	t.tex.Destroy()
 }
 
 func NewTextUI(text string, font *ttf.Font, color sdl.Color, z ZLayer, fromCenter bool) *TextUI {
@@ -52,7 +57,7 @@ func (t *TextUI) reworkTex() {
 	if t.text == "" {
 		return
 	}
-	t.tex, t.tex_w, t.tex_h = texture.CreateTextTex(t.scene.R, t.text, t.font, t.color)
+	t.tex, t.tex_w, t.tex_h = texture.CreateTextTex(t.scene.R(), t.text, t.font, t.color)
 	t.tex.SetBlendMode(sdl.BLENDMODE_BLEND)
 	t.tex.SetAlphaMod(t.color.A)
 }
@@ -87,7 +92,7 @@ func (t *TextUI) GetTexSize() (tex_w, tex_h int32) {
 	return t.tex_w, t.tex_h
 }
 
-func (t *TextUI) Init(s *BScene) {
+func (t *TextUI) Init(s Scene) {
 	t.scene = s
 	t.reworkTex()
 }

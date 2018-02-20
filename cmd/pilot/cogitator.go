@@ -62,7 +62,7 @@ func (c *Cogitator) GetShipStates(ship *PlayerShipGameObject) {
 	c.Stats.angleSpeed = ship.angleSpeed
 	c.Stats.maxAngMomentum = ship.maxAngMomentum
 	c.Stats.mainThrust = ship.mainThrust
-	c.Stats.camAngle = ship.scene.CameraAngle
+	c.Stats.camAngle = ship.scene.CameraAngle()
 }
 
 //Разбираем управление, Здесь же перемапливаем клавиши разных джойстиков

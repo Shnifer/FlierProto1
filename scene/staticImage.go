@@ -6,10 +6,14 @@ import (
 )
 
 type StaticImage struct {
-	scene   *BScene
+	scene   Scene
 	texName string
 	Tex     *sdl.Texture
 	ZLayer  ZLayer
+}
+
+func (si *StaticImage) Destroy() {
+	//Полагаем, что текстура из кэша
 }
 
 func NewStaticImage(texName string, ZLayer ZLayer) *StaticImage {
@@ -20,7 +24,7 @@ func (si *StaticImage) GetID() string {
 	return ""
 }
 
-func (si *StaticImage) Init(scene *BScene) {
+func (si *StaticImage) Init(scene Scene) {
 	si.scene = scene
 	si.Tex = texture.Cache.GetTexture(si.texName)
 }

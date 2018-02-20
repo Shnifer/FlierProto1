@@ -87,7 +87,9 @@ func (PilotScene *PilotScene) Init() {
 	PilotScene.AddObject(fpsUI)
 	PilotScene.fpsUI = fpsUI
 
-	PilotScene.BScene.Init()
+	for i := range PilotScene.Objects {
+		PilotScene.Objects[i].Init(PilotScene)
+	}
 }
 
 //Возвращает силу тяжести, точнее ускорение для заданной массы и заданного пробного положения
@@ -105,11 +107,12 @@ func GravityForce(attractor HugeMass, body V2.V2, Calc3D bool) V2.V2 {
 }
 
 func (ps *PilotScene) Update(dt float32) {
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_KP_PLUS) {
-		ps.CameraScale *= (1 + dt)
+	scale:=ps.CameraScale()
+	if ps.CH().GetKey(sdl.SCANCODE_KP_PLUS) {
+		scale *= (1 + dt)
 	}
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_KP_MINUS) {
-		ps.CameraScale *= (1 - dt)
+	if ps.CH().GetKey(sdl.SCANCODE_KP_MINUS) {
+		scale *= (1 - dt)
 	}
 	min := DEFVAL.CameraMaxScale
 	if min == 0 {
@@ -123,11 +126,13 @@ func (ps *PilotScene) Update(dt float32) {
 	} else {
 		max = 1 / max
 	}
-	Clamp(&ps.CameraScale, min, max)
+	Clamp(&scale, min, max)
+	ps.SetCameraScale(scale)
+
+	controlHandler:=ps.CH()
 
 	//ФИЗИКА - ГРАВИТАЦИЯ
-	s := ps.BScene
-	for _, obj := range s.Objects {
+	for _, obj := range ps.Objects {
 		attractor, ok := obj.(HugeMass)
 		if !ok {
 			continue
@@ -138,24 +143,23 @@ func (ps *PilotScene) Update(dt float32) {
 	//ФИЗИКА - ТРЕНИЕ
 	const kTens = 0.2
 	tensForce := ps.Ship.speed.Mul(-kTens)
-	neb := s.GetObjByID("nebula1").(*Nebula)
+	neb := ps.GetObjByID("nebula1").(*Nebula)
 	if neb.isInside(ps.Ship.pos) {
-		log.Printf("WE ARE INSIDE A NEBULA!!! Ship speed: %f", ps.Ship.speed.Len())
 		ps.Ship.ApplyForce(tensForce)
 	}
 
 	//ВНЕШНИЕ ПРЯМЫЕ ВОЗДЕЙСТВИЯ НИ КИНЕМАТИКУ КОРАБЛЯ
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_SPACE) {
+	if controlHandler.GetKey(sdl.SCANCODE_SPACE) {
 		ps.Ship.speed = V2.V2{}
 		ps.Ship.angleSpeed = 0
-		ps.CameraAngle = 0
+		ps.SetCameraAngle(0)
 		ps.camFollowAngle = true
 	}
 
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_KP_ENTER) {
+	if controlHandler.GetKey(sdl.SCANCODE_KP_ENTER) {
 		ps.Ship.speed = V2.V2{}
 		ps.Ship.angleSpeed = 0
-		ps.CameraAngle = 0
+		ps.SetCameraAngle(0)
 		ps.camFollowAngle = true
 		startLoc := ps.GetObjByID(DEFVAL.StartLocationName)
 		if startLoc != nil {
@@ -166,59 +170,62 @@ func (ps *PilotScene) Update(dt float32) {
 		}
 	}
 
-	if ps.ControlHandler.WasKey(sdl.SCANCODE_1) {
+	if controlHandler.WasKey(sdl.SCANCODE_1) {
 		ps.Ship.showFixed = !ps.Ship.showFixed
 		log.Printf("Fixed ship size mode = %v\n", ps.Ship.showFixed)
 	}
 
-	if ps.ControlHandler.WasKey(sdl.SCANCODE_2) {
+	if controlHandler.WasKey(sdl.SCANCODE_2) {
 		ps.gravityCalc3D = !ps.gravityCalc3D
 		log.Printf("3D gravity mode = %v\n", ps.gravityCalc3D)
 	}
 
-	if ps.ControlHandler.WasKey(sdl.SCANCODE_3) {
+	if controlHandler.WasKey(sdl.SCANCODE_3) {
 		ps.showgizmos = !ps.showgizmos
 		log.Printf("Show Gizmos = %v", ps.showgizmos)
 	}
 
-	if ps.ControlHandler.WasKey(sdl.SCANCODE_4) {
+	if controlHandler.WasKey(sdl.SCANCODE_4) {
 		ps.GetObjByID("nebula1").(*Nebula).drawMode =
 			(ps.GetObjByID("nebula1").(*Nebula).drawMode + 1) % 3
 		log.Println("Nebula Mod Changed")
 	}
 
 	//АПДЕЙТ СЦЕНЫ
-	s.Update(dt)
+	ps.BScene.Update(dt)
 
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_Q) {
-		ps.CameraAngle += 180 * dt
+	angle := ps.CameraAngle()
+	if controlHandler.GetKey(sdl.SCANCODE_Q) {
+		angle += 180 * dt
+		ps.SetCameraAngle(angle)
 		ps.camFollowAngle = false
 	}
-	if ps.ControlHandler.GetKey(sdl.SCANCODE_E) {
-		ps.CameraAngle -= 180 * dt
+	if controlHandler.GetKey(sdl.SCANCODE_E) {
+		angle -= 180 * dt
+		ps.SetCameraAngle(angle)
 		ps.camFollowAngle = false
 	}
 
 	//Сдвинули камеру
 	if ps.camFollowAngle {
-		ps.CameraAngle = -ps.Ship.angle
+		ps.SetCameraAngle(-ps.Ship.angle)
 	}
 
 	scrOff := float32(winW * ps.shipBack / 100)
-	offset := V2.InDir(-ps.CameraAngle).Mul(scrOff / ps.CameraScale)
+	offset := V2.InDir(-ps.CameraAngle()).Mul(scrOff / ps.CameraScale())
 	ps.CameraCenter = ps.Ship.pos.Add(offset)
 }
 
-func (ps PilotScene) Draw() {
+func (ps *PilotScene) Draw() {
 
-	s := ps.BScene
-	s.Draw()
+	ps.BScene.Draw()
 
 	GizmoGravityForceK := DEFVAL.GizmoGravityForceK
+	//TODO: Вынести гизмосы в отдельный объект сцены
 	//Отрисовка "Гизмосов" гравитации
 	if ps.showgizmos && (DEFVAL.ShowGizmoGravityRound || DEFVAL.ShowGizmoGravityForce) {
 		sumForce := V2.V2{}
-		for _, obj := range s.Objects {
+		for _, obj := range ps.Objects {
 			attractor, ok := obj.(HugeMass)
 			if !ok {
 				continue
@@ -229,9 +236,9 @@ func (ps PilotScene) Draw() {
 			if DEFVAL.ShowGizmoGravityForce {
 				// Гизмос Наш вектор
 				force := GravityForce(attractor, ps.Ship.pos, ps.gravityCalc3D).Mul(GizmoGravityForceK)
-
-				s.R.SetDrawColor(0, 0, 255, 255)
-				s.R.DrawLine(winW/2, winH/2, winW/2+int32(force.Rotate(s.CameraAngle).X), winH/2-int32(force.Rotate(s.CameraAngle).Y))
+				forceCamRot:=force.Rotate(ps.CameraAngle())
+				ps.R().SetDrawColor(0, 0, 255, 255)
+				ps.R().DrawLine(winW/2, winH/2, winW/2+int32(forceCamRot.X), winH/2-int32(forceCamRot.Y))
 				sumForce = sumForce.Add(force)
 			}
 
@@ -262,26 +269,31 @@ func (ps PilotScene) Draw() {
 						x, y := ps.CameraTransformV2(dot)
 						points[a] = sdl.Point{x, y}
 					}
-					s.R.SetDrawColor(128, 128, 128, 128)
-					s.R.DrawLines(points)
+					ps.R().SetDrawColor(128, 128, 128, 128)
+					ps.R().DrawLines(points)
 				}
 			}
 		}
 
 		if DEFVAL.ShowGizmoGravityForce {
 			//Гизмос суммарный вектор гравитации
-			s.R.SetDrawColor(0, 200, 0, 255)
-			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
+
+			sumForceCamRot:=sumForce.Rotate(ps.CameraAngle())
+
+			ps.R().SetDrawColor(0, 200, 0, 255)
+			ps.R().DrawLine(winW/2, winH/2, winW/2+int32(sumForceCamRot.X), winH/2-int32(sumForceCamRot.Y))
 
 			//Вектор тяги
 			thrustForce := V2.InDir(ps.Ship.angle).Mul(ps.Ship.mainThrust * ps.Ship.maxThrustForce)
-			s.R.SetDrawColor(200, 0, 0, 255)
-			s.R.DrawLine(winW/2, winH/2, winW/2+int32(thrustForce.Rotate(s.CameraAngle).X), winH/2-int32(thrustForce.Rotate(s.CameraAngle).Y))
-			sumForce = sumForce.Add(thrustForce)
+			thrustForceCamRot:=thrustForce.Rotate(ps.CameraAngle())
+			ps.R().SetDrawColor(200, 0, 0, 255)
+			ps.R().DrawLine(winW/2, winH/2, winW/2+int32(thrustForceCamRot.X), winH/2-int32(thrustForceCamRot.Y))
 
 			//тяга + гравитация
-			s.R.SetDrawColor(200, 200, 200, 255)
-			s.R.DrawLine(winW/2, winH/2, winW/2+int32(sumForce.Rotate(s.CameraAngle).X), winH/2-int32(sumForce.Rotate(s.CameraAngle).Y))
+			sumForce = sumForce.Add(thrustForce)
+			sumForceCamRot = sumForce.Rotate(ps.CameraAngle())
+			ps.R().SetDrawColor(200, 200, 200, 255)
+			ps.R().DrawLine(winW/2, winH/2, winW/2+int32(sumForceCamRot.X), winH/2-int32(sumForceCamRot.Y))
 		}
 	}
 }

@@ -86,7 +86,7 @@ loop:
 		case <-fps.PTick:
 			//МЫ ВЕДОМЫЕ, пока не олучили первое ненулевое значение из вне -- не трогаемся.
 			//это же флаг паузы показа
-			if NaviScene.NetSyncTime == 0 {
+			if NaviScene.netSyncTime == 0 {
 				continue
 			}
 			deltaTime := float32(time.Since(lastPhysFrame).Seconds())
@@ -96,7 +96,7 @@ loop:
 			lastPhysFrame = time.Now()
 			physFrameN++
 
-			NaviScene.NetSyncTime += deltaTime
+			NaviScene.netSyncTime += deltaTime
 			ControlHandler.BeforeUpdate()
 			NaviScene.Update(deltaTime)
 			T := float32(time.Since(lastPhysFrame).Seconds())
@@ -107,7 +107,7 @@ loop:
 			select {
 			//ПРИОРИТЕТ 2: тик ГРАФИЧЕСКОГО движка
 			case <-fps.GTick:
-				if NaviScene.NetSyncTime == 0 {
+				if NaviScene.netSyncTime == 0 {
 					continue
 				}
 				graphFrameN++
@@ -194,7 +194,7 @@ func ProcMSG(scene *NaviCosmosScene, param string) {
 		if err != nil {
 			log.Panicln(err)
 		}
-		scene.NetSyncTime = float32(t)
+		scene.netSyncTime = float32(t)
 	case MNT.UPD_SSS:
 		var SSS MNT.ShipSystemsState
 		SSS.Decode(param)
@@ -208,7 +208,7 @@ func ProcShipData(scene *NaviCosmosScene, data *MNT.ShipPosData) {
 	scene.ship.angle = data.Angle
 	scene.ship.angleSpeed = data.AngleSpeed
 	if scene.camFollowShip {
-		scene.CameraCenter = scene.ship.pos
+		scene.cameraCenter = scene.ship.pos
 	}
 }
 

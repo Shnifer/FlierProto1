@@ -2,7 +2,6 @@
 package fps
 
 import (
-	"log"
 	"time"
 )
 
@@ -70,7 +69,8 @@ func ListenAndShowFPS() chan<- FpsData {
 
 		overhead := params.TickerBalancerOverhead
 		for fps := range inData {
-			log.Println(
+			_=FPS_UPDATE_S
+			/*log.Println(
 				"Frame/s:", float32(fps.Graph-lastGraph)/FPS_UPDATE_S,
 				"Phys/s:", float32(fps.Phys-lastPhys)/FPS_UPDATE_S,
 				"io/s:", float32(fps.Io-lastIO)/FPS_UPDATE_S,
@@ -78,7 +78,7 @@ func ListenAndShowFPS() chan<- FpsData {
 				"max dt", fps.MaxDt*1000, "ms",
 				"maxGraph:", fps.MaxGraphT*1000, "ms",
 				"maxPhys:", fps.MaxPhysT*1000, "ms",
-			)
+			)*/
 
 			lastGraph = fps.Graph
 			lastPhys = fps.Phys

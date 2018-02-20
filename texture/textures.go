@@ -62,7 +62,7 @@ func (at *AnimTex) getRect(i int32) *sdl.Rect {
 //	index := (y*winW + x) * 4
 //
 //	if index < len(pixels) && index >= 0 {
-//		pixels[index+0] = c.R
+//		pixels[index+0] = c.r
 //		pixels[index+1] = c.G
 //		pixels[index+2] = c.B
 //	}

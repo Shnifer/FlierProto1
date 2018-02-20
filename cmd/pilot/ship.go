@@ -24,7 +24,7 @@ type ShipGameObject struct {
 	//Радиус и коллизии и полупоперечник рисовки
 	colRad float32
 
-	scene *scene.BScene
+	scene scene.Scene
 	tex   *sdl.Texture
 	ps    *ParticleSystem
 
@@ -33,6 +33,11 @@ type ShipGameObject struct {
 	//TODO: абстрагировать в АНИМАЦИЮ
 	anim      *Anim
 	showFixed bool
+}
+
+func (ship *ShipGameObject) Destroy() {
+	//Полагаем, что текстура из кэша
+
 }
 
 func newShip(ps *ParticleSystem) *ShipGameObject {
@@ -56,7 +61,7 @@ func (ship *ShipGameObject) GetID() string {
 	return ""
 }
 
-func (ship *ShipGameObject) Init(scene *scene.BScene) {
+func (ship *ShipGameObject) Init(scene scene.Scene) {
 	ship.scene = scene
 	ship.tex = texture.Cache.GetTexture("ship.png")
 
@@ -97,7 +102,7 @@ func (ship ShipGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 
 	if inCamera {
 		req := scene.NewRenderReq(ship.tex, nil, camRect, scene.Z_GAME_OBJECT,
-			-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_NONE,nil)
+			-float64(ship.angle+ship.scene.CameraAngle()), nil, sdl.FLIP_NONE,nil)
 		res = append(res, req)
 	}
 

@@ -12,12 +12,16 @@ import (
 
 type StarGameObject struct {
 	*MNT.Star
-	scene *scene.BScene
+	scene scene.Scene
 	tex   *sdl.Texture
 
 	visZrot float32
 	//const фиксируем при загрузке галактики и используем для синхронизации по глобальному времени
 	startAngle float32
+}
+
+func (star *StarGameObject) Destroy() {
+	//Полагаем, что текстура из кэша
 }
 
 func (star *StarGameObject) GetID() string {
@@ -39,7 +43,7 @@ func (s *StarGameObject) Update(dt float32) {
 		s.Pos = s.Pos.Add(s.Dir.Mul(dt))
 	} else {
 		//спутник
-		s.Angle = s.startAngle + s.OrbSpeed*s.scene.NetSyncTime
+		s.Angle = s.startAngle + s.OrbSpeed*s.scene.NetSyncTime()
 		parentObj := s.scene.GetObjByID(s.Parent)
 		if parentObj == nil {
 			log.Panicln("Update of ", s.ID, "cant find the parent", s.Parent)
@@ -73,7 +77,7 @@ func (s *StarGameObject) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 	return res
 }
 
-func (star *StarGameObject) Init(s *scene.BScene) {
+func (star *StarGameObject) Init(s scene.Scene) {
 	star.scene = s
 	star.tex = texture.Cache.GetTexture(star.TexName)
 }

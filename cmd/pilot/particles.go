@@ -32,13 +32,19 @@ type ProduceStats struct {
 
 //Частицы могут часто создаваться, поэтому делаем постоянный срез, и управляем чеез поле active
 type ParticleSystem struct {
-	scene    *scene.BScene
+	scene    scene.Scene
 	maxCount int
 	curCount int
 
 	//ходим массив по кругу
 	cursor    int
 	particles []particle
+
+	tex *sdl.Texture
+}
+
+func (ps *ParticleSystem) Destroy() {
+	//Текстура из кэша
 }
 
 func newParticleSystem(maxCount int) *ParticleSystem {
@@ -52,8 +58,9 @@ func (ps *ParticleSystem) GetID() string {
 	return ""
 }
 
-func (ps *ParticleSystem) Init(scene *scene.BScene) {
+func (ps *ParticleSystem) Init(scene scene.Scene) {
 	ps.scene = scene
+	ps.tex = texture.Cache.GetTexture("particle.png")
 }
 
 func (ps *ParticleSystem) Update(dt float32) {
@@ -80,8 +87,7 @@ func (ps *ParticleSystem) Draw(r *sdl.Renderer) (res scene.RenderReqList) {
 		}
 		r.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 		x, y := ps.scene.CameraTransformV2(v.pos)
-		t := texture.Cache.GetTexture("particle.png")
-		req := scene.NewRenderReqSimple(t, nil, &sdl.Rect{x - 5, y - 5, 11, 11}, scene.Z_UNDER_OBJECT)
+		req := scene.NewRenderReqSimple(ps.tex, nil, &sdl.Rect{x - 5, y - 5, 11, 11}, scene.Z_UNDER_OBJECT)
 		res = append(res, req)
 
 	}

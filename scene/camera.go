@@ -8,23 +8,33 @@ import (
 //СОГЛАШЕНИЯ ПО КООРДИНАТАМ И УГЛАМ:
 //в мировых координатах Y вверх, X вправо, углы против часовой, 0 угол -- вверх
 
+type CameraInterface interface {
+	CameraTransformRect(r f32Rect) (camRect *sdl.Rect, inCamera bool)
+	CameraTransformV2(v V2.V2) (x, y int32)
+	CameraScrTransformV2(x, y int32) V2.V2
+	CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) (camRect *sdl.Rect, inCamera bool)
+	CameraAngle() float32
+	CameraScale() float32
+	SetCameraScale(scale float32)
+	SetCameraAngle(angle float32)}
+
 type Сamera struct {
 	//ЦентрКамеры в мировых координатах
 	CameraCenter V2.V2
 	//Масштаб пикселей/единицу мировых координат,
 	//увеличение текстур там, где это надо
-	CameraScale float32
-	CameraAngle float32
+	cameraScale float32
+	cameraAngle float32
 
 	//Размер поля камеры в пикселях экрана
-	CamW, CamH int32
+	camW, camH int32
 }
 
 func newCamera(CamW, CamH int32, CameraScale float32) Сamera {
 	return Сamera{
-		CameraScale: CameraScale,
-		CamW:        CamW,
-		CamH:        CamH,
+		cameraScale: CameraScale,
+		camW:        CamW,
+		camH:        CamH,
 	}
 }
 
@@ -57,35 +67,35 @@ func NewF32Sqr(center V2.V2, rad float32) f32Rect {
 }
 
 //Преобразует координаты из реавльного вектора в координаты камеры сцены
-func (cam Сamera) CameraTransformV2(v V2.V2) (x, y int32) {
-	w := V2.Sub(v, cam.CameraCenter).Rotate(cam.CameraAngle).Mul(cam.CameraScale)
-	x = cam.CamW/2 + int32(w.X)
-	y = cam.CamH/2 - int32(w.Y)
+func (cam *Сamera) CameraTransformV2(v V2.V2) (x, y int32) {
+	w := V2.Sub(v, cam.CameraCenter).Rotate(cam.cameraAngle).Mul(cam.cameraScale)
+	x = cam.camW/2 + int32(w.X)
+	y = cam.camH/2 - int32(w.Y)
 	return
 }
 
 //Преобразует координаты из координат экрана в реальный вектор
-func (cam Сamera) CameraScrTransformV2(x, y int32) V2.V2 {
-	x = x - cam.CamW/2
-	y = cam.CamH/2 - y
-	V := V2.V2{float32(x), float32(y)}.Mul(1 / cam.CameraScale).Rotate(-cam.CameraAngle).Add(cam.CameraCenter)
+func (cam *Сamera) CameraScrTransformV2(x, y int32) V2.V2 {
+	x = x - cam.camW/2
+	y = cam.camH/2 - y
+	V := V2.V2{float32(x), float32(y)}.Mul(1 / cam.cameraScale).Rotate(-cam.cameraAngle).Add(cam.CameraCenter)
 	return V
 }
 
-func (cam Сamera) InCamera(rect sdl.Rect) bool {
-	return !(rect.X+rect.W < 0 || rect.X > cam.CamW || rect.Y > cam.CamH || rect.Y+rect.H < 0)
+func (cam *Сamera) InCamera(rect sdl.Rect) bool {
+	return !(rect.X+rect.W < 0 || rect.X > cam.camW || rect.Y > cam.camH || rect.Y+rect.H < 0)
 }
 
 //Преобразует прямоугольник из реальных координат в sdl.Rect
 //определяет, лежит ли полученный Rect в границах экрана камеры
-func (cam Сamera) CameraTransformRect(r f32Rect) (camRect *sdl.Rect, inCamera bool) {
+func (cam *Сamera) CameraTransformRect(r f32Rect) (camRect *sdl.Rect, inCamera bool) {
 	//TODO: понять нужен ли воможный пивот не по центру, пока считаем от центра
 
 	//Центральный пиксель после поворота
 	x, y := cam.CameraTransformV2(r.Center)
 	//полувысота и ширина в экранных координатах после скейла
-	hW := int32(r.HW * cam.CameraScale)
-	hH := int32(r.HH * cam.CameraScale)
+	hW := int32(r.HW * cam.cameraScale)
+	hH := int32(r.HH * cam.cameraScale)
 
 	res := sdl.Rect{
 		x - hW,
@@ -99,7 +109,7 @@ func (cam Сamera) CameraTransformRect(r f32Rect) (camRect *sdl.Rect, inCamera b
 }
 
 //Экранный прямоугольник для заданной физической координаты центра И ЭКРАННОГО РАЗМЕРА
-func (cam BScene) CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) (camRect *sdl.Rect, inCamera bool) {
+func (cam *Сamera) CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) (camRect *sdl.Rect, inCamera bool) {
 	x, y := cam.CameraTransformV2(center)
 	res := sdl.Rect{
 		x - halfsize,
@@ -112,7 +122,7 @@ func (cam BScene) CameraRectByCenterAndScreenSize(center V2.V2, halfsize int32) 
 	return &res, inCamera
 }
 
-func (cam BScene) CameraRectByCenterAndScreenWH(center V2.V2, W, H int32) (camRect *sdl.Rect, inCamera bool) {
+func (cam *Сamera) CameraRectByCenterAndScreenWH(center V2.V2, W, H int32) (camRect *sdl.Rect, inCamera bool) {
 	x, y := cam.CameraTransformV2(center)
 	res := sdl.Rect{
 		x - W/2,
@@ -123,4 +133,21 @@ func (cam BScene) CameraRectByCenterAndScreenWH(center V2.V2, W, H int32) (camRe
 	inCamera = cam.InCamera(res)
 
 	return &res, inCamera
+}
+
+
+func (cam *Сamera) CameraAngle() float32 {
+	return cam.cameraAngle
+}
+
+func (cam *Сamera) CameraScale() float32 {
+	return cam.cameraScale
+}
+
+func (cam *Сamera) SetCameraScale(scale float32) {
+	cam.cameraScale = scale
+}
+
+func (cam *Сamera) SetCameraAngle(angle float32) {
+	cam.cameraAngle = angle
 }

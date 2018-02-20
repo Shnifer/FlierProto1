@@ -40,7 +40,7 @@ func (ship *PlayerShipGameObject) GetID() string {
 	return ""
 }
 
-func (ship *PlayerShipGameObject) Init(scene *scene.BScene) {
+func (ship *PlayerShipGameObject) Init(scene scene.Scene) {
 	ship.ShipGameObject.Init(scene)
 }
 
@@ -58,7 +58,7 @@ func (ship *PlayerShipGameObject) ApplyCO(co CogitatorOutput, dt float32) {
 }
 
 func (ship *PlayerShipGameObject) Update(dt float32) {
-	ship.GetInputs(ship.scene.ControlHandler)
+	ship.GetInputs(ship.scene.CH())
 	ship.GetShipStates(ship)
 	Output := ship.Cogitate(dt)
 	ship.ApplyCO(Output, dt)
@@ -101,7 +101,7 @@ func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) scene.RenderReqList {
 			var cameraRect *sdl.Rect
 			childPos := V2.V2{0, -1.4}
 			if showFixedSized {
-				flameCentre := childPos.Mul(float32(DEFVAL.ShipFixedSize)/ship.scene.CameraScale).ApplyOnTransform(ship.pos, ship.angle)
+				flameCentre := childPos.Mul(float32(DEFVAL.ShipFixedSize)/ship.scene.CameraScale()).ApplyOnTransform(ship.pos, ship.angle)
 				cameraRect, _ = ship.scene.CameraRectByCenterAndScreenSize(flameCentre, int32(float32(DEFVAL.ShipFixedSize)*mainFlameSize))
 			} else {
 				//физическая координата центра пламени
@@ -111,7 +111,7 @@ func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) scene.RenderReqList {
 				cameraRect, _ = ship.scene.CameraTransformRect(dRect)
 			}
 			req := scene.NewRenderReq(flameTex, flameRect, cameraRect, scene.Z_UNDER_OBJECT,
-				-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL,nil)
+				-float64(ship.angle+ship.scene.CameraAngle()), nil, sdl.FLIP_VERTICAL,nil)
 			res = append(res, req)
 		}
 		if ship.angThrust != 0 {
@@ -124,7 +124,7 @@ func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) scene.RenderReqList {
 				childPos = V2.V2{-0.55, -1.1}
 			}
 			if showFixedSized {
-				flameCentre := childPos.Mul(float32(DEFVAL.ShipFixedSize)/ship.scene.CameraScale).ApplyOnTransform(ship.pos, ship.angle)
+				flameCentre := childPos.Mul(float32(DEFVAL.ShipFixedSize)/ship.scene.CameraScale()).ApplyOnTransform(ship.pos, ship.angle)
 				cameraRect, _ = ship.scene.CameraRectByCenterAndScreenSize(flameCentre, int32(float32(DEFVAL.ShipFixedSize)*sideFlameSize))
 			} else {
 				//физическая координата центра пламени
@@ -134,7 +134,7 @@ func (ship PlayerShipGameObject) Draw(r *sdl.Renderer) scene.RenderReqList {
 				cameraRect, _ = ship.scene.CameraTransformRect(dRect)
 			}
 			req := scene.NewRenderReq(flameTex, flameRect, cameraRect, scene.Z_UNDER_OBJECT,
-				-float64(ship.angle+ship.scene.CameraAngle), nil, sdl.FLIP_VERTICAL,nil)
+				-float64(ship.angle+ship.scene.CameraAngle()), nil, sdl.FLIP_VERTICAL,nil)
 			res = append(res, req)
 		}
 	}
