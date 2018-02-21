@@ -31,6 +31,7 @@ func NewEngiScene(r *sdl.Renderer, ch *control.Handler) *EngiScene {
 }
 
 //Переводит виртуальные координаты "проценты экрана" в экранный прямоугольник
+//Копия в логинСцене
 func VirtualRect(x, y, w, h int) sdl.Rect {
 	return sdl.Rect{
 		X: winW * int32(x) / 100,

@@ -97,7 +97,7 @@ func (t *TextUI) GetTexSize() (tex_w, tex_h int32) {
 
 func (t *TextUI) Init(s Scene) {
 	t.scene = s
-	t.reworkTex()
+	t.needReworkTex=true
 }
 
 func (t *TextUI) Update(dt float32) {

@@ -16,7 +16,7 @@ type HugeMass interface {
 	GetGravState() (pos V2.V2, Mass float32)
 }
 
-type PilotScene struct {
+type PilotCScene struct {
 	*scene.BScene
 	Ship          *PlayerShipGameObject
 	gravityCalc3D bool
@@ -29,8 +29,8 @@ type PilotScene struct {
 	fpsUI *scene.TextUI
 }
 
-func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
-	return &PilotScene{
+func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotCScene {
+	return &PilotCScene{
 		BScene:         scene.NewScene(r, ch, winW, winH),
 		gravityCalc3D:  DEFVAL.GravityCalc3D,
 		shipBack:       DEFVAL.ShipShowBotOffset,
@@ -39,7 +39,7 @@ func NewPilotScene(r *sdl.Renderer, ch *control.Handler) *PilotScene {
 	}
 }
 
-func (PilotScene *PilotScene) Init() {
+func (PilotScene *PilotCScene) Init() {
 	BackGround := scene.NewStaticImage("background.jpg", scene.Z_STAT_BACKGROUND)
 	FrontCabin := scene.NewStaticImage("cabinBorder.png", scene.Z_STAT_HUD)
 	PilotScene.AddObject(BackGround)
@@ -106,7 +106,7 @@ func GravityForce(attractor HugeMass, body V2.V2, Calc3D bool) V2.V2 {
 	return force
 }
 
-func (ps *PilotScene) Update(dt float32) {
+func (ps *PilotCScene) Update(dt float32) {
 	scale:=ps.CameraScale()
 	if ps.CH().GetKey(sdl.SCANCODE_KP_PLUS) {
 		scale *= (1 + dt)
@@ -216,7 +216,7 @@ func (ps *PilotScene) Update(dt float32) {
 	ps.SetCameraCenter(ps.Ship.pos.Add(offset))
 }
 
-func (ps *PilotScene) Draw() {
+func (ps *PilotCScene) Draw() {
 
 	ps.BScene.Draw()
 
@@ -298,6 +298,6 @@ func (ps *PilotScene) Draw() {
 	}
 }
 
-func (ps *PilotScene) showFps(data string) {
+func (ps *PilotCScene) showFps(data string) {
 	ps.fpsUI.ChangeText("fps: " + data)
 }

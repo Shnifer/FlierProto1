@@ -77,7 +77,7 @@ loop:
 		case <-ShowFpsTick:
 			fpsControl <- fps.FpsData{graphFrameN, physFrameN, ioFrameN, netFrameN,
 				maxDt, maxGraphT, maxPhysT}
-			ps,ok:= CurScene.(*PilotScene)
+			ps,ok:= CurScene.(*PilotCScene)
 			if ok{
 				ps.showFps(strconv.Itoa((graphFrameN - lastFrame) * 1000 / DEFVAL.FPS_UPDATE_MS))
 			}
@@ -176,7 +176,7 @@ loop:
 		}
 	}
 
-	ps, ok:=scene.(*PilotScene)
+	ps, ok:=scene.(*PilotCScene)
 	if ok {
 		shipData := MNT.ShipPosData{
 			Pos:        ps.Ship.pos,
@@ -200,7 +200,7 @@ func ProcMSG(scene scene.Scene, cmd, param string) {
 }
 
 func ProcSSS(scene scene.Scene, SSS MNT.ShipSystemsState) {
-	ps, ok:=scene.(*PilotScene)
+	ps, ok:=scene.(*PilotCScene)
 	if ok {
 		ps.Ship.maxThrustForce = BSP.MaxThrust * SSS[MNT.SMarch]
 		ps.Ship.maxAngMomentum = BSP.MaxMomentum * SSS[MNT.SManeur]

@@ -23,13 +23,6 @@ type GameState byte
 //TODO: Абстрагировать
 var BSP MNT.BaseShipParameters
 
-const (
-	//TODO: Экран перезагрузки
-	state_Login GameState = iota
-	state_PilotSpace
-	state_NaviSpace
-)
-
 func main() {
 
 	runtime.LockOSThread()
@@ -40,6 +33,7 @@ func main() {
 	ControlHandler := control.NewControlHandler(Joystick)
 
 	var CurScene scene.Scene
+
 	CurScene = NewEngiScene(renderer, ControlHandler)
 	CurScene.Init()
 
